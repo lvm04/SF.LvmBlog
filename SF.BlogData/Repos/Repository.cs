@@ -36,7 +36,7 @@ public class Repository<T> : IRepository<T> where T : class
 
     public async Task<IEnumerable<T>> GetAll()
     {
-        return await Set.ToListAsync();
+        return await Set.AsNoTracking().ToListAsync();
     }
 
     public async Task Update(T item)
