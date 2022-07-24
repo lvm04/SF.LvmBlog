@@ -74,7 +74,7 @@ namespace SF.BlogApi.Controllers
         {
             var commentRepo = _unitOfWork.GetRepository<Comment>() as CommentRepository;
             var dbComment = _mapper.Map<Comment>(comment);
-            var currentUser = await GetCurrentUser();
+            var currentUser = await HttpContext.GetCurrentUser();
             dbComment.AuthorId = currentUser.Id;
             await commentRepo.Create(dbComment);
 
@@ -89,7 +89,7 @@ namespace SF.BlogApi.Controllers
         [Authorize]
         public async Task<IActionResult> Edit([FromRoute]int id, [FromBody]EditCommentRequest comment)
         {
-            var currentUser = await GetCurrentUser();
+            var currentUser = await HttpContext.GetCurrentUser();
 
             var commentRepo = _unitOfWork.GetRepository<Comment>() as CommentRepository;
             var oldComment = await commentRepo.Get(id);
@@ -110,13 +110,6 @@ namespace SF.BlogApi.Controllers
             return StatusCode(200, _mapper.Map<CommentView>(newComment));
         }
 
-
-        private async Task<User> GetCurrentUser()
-        {
-            var currentUserLogin = HttpContext.User.Identity.Name;
-            var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;
-            return await userRepo.GetByLogin(currentUserLogin);
-        }
 
         /// <summary>
         /// Удаление комментария

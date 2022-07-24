@@ -29,7 +29,7 @@ namespace SF.BlogApi.Controllers
 
         
         /// <summary>
-        /// Получить комментарий по ID
+        /// Получить статью по ID
         /// </summary>
         [HttpGet]
         [Route("{id}")]
@@ -41,20 +41,20 @@ namespace SF.BlogApi.Controllers
                 return StatusCode(400, $"Ошибка: Статья с идентификатором {id} не существует.");
             var article = _mapper.Map<ArticleView>(_article);
             
-            return StatusCode(200, article);  
+            return StatusCode(200, article);   
         }
 
 
         /// <summary>
-        /// Создание комментария
+        /// Создание статьи
         /// </summary>
         [HttpPost]
         [Route("")]
         [Authorize]
-        public async Task<IActionResult> Create(CreateCommentRequest comment)
+        public async Task<IActionResult> Create(CreateArticleRequest article)
         {
             var commentRepo = _unitOfWork.GetRepository<Comment>() as CommentRepository;
-            var dbComment = _mapper.Map<Comment>(comment);
+            var dbComment = _mapper.Map<Comment>(article);
             await commentRepo.Create(dbComment);
 
             return StatusCode(200, _mapper.Map<CommentView>(dbComment));
