@@ -99,7 +99,7 @@ namespace SF.BlogApi.Controllers
 
             // Проверяем может ли текущий пользователь редактировать данный комментарий
             // Для этого он должен быть автором или принадлежать к группе admin или moderator
-            if (comment.AuthorId != currentUser.Id 
+            if (oldComment.AuthorId != currentUser.Id 
                 && currentUser.Roles.FirstOrDefault(r => r.Name == "admin" ) == null
                 && currentUser.Roles.FirstOrDefault(r => r.Name == "moderator") == null)
                 return StatusCode(400, $"Ошибка: Вы не имеете право редактировать этот комментарий.");
@@ -126,7 +126,7 @@ namespace SF.BlogApi.Controllers
 
             await commentRepo.Delete(comment);
 
-            return StatusCode(200, $"Комментарий с ID {comment.Id}) удален");
+            return StatusCode(200, $"Комментарий с ID {comment.Id} удален");
         }
 
 

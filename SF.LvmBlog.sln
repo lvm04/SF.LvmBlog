@@ -3,11 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SF.LvmBlog", "SF.LvmBlog\SF.LvmBlog.csproj", "{EC850755-087C-4CC0-B39C-1C40A6F5CF19}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SF.LvmBlog", "SF.LvmBlog\SF.LvmBlog.csproj", "{EC850755-087C-4CC0-B39C-1C40A6F5CF19}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SF.BlogApi", "SF.BlogApi\SF.BlogApi.csproj", "{49293466-BBF8-4485-850E-831E274DFF1F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SF.BlogApi", "SF.BlogApi\SF.BlogApi.csproj", "{49293466-BBF8-4485-850E-831E274DFF1F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SF.BlogData", "SF.BlogData\SF.BlogData.csproj", "{6D5A4246-F6FC-416C-92F7-85D4A314A553}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SF.BlogData", "SF.BlogData\SF.BlogData.csproj", "{6D5A4246-F6FC-416C-92F7-85D4A314A553}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{ADC9B81F-FC44-4E71-83D9-01F1B9706AC4}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

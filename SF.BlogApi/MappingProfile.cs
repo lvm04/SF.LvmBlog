@@ -20,6 +20,7 @@ public class MappingProfile : Profile
         CreateMap<Article, ArticleView>()
             .ForMember(dest => dest.Author, opt => opt.MapFrom(src => $"{src.Author.Name} (ID: {src.Author.Id}, Login: {src.Author.Login})"))
             .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags.Select(t => t.Name)))
-            .ForMember(dest => dest.Comments, opt => opt.MapFrom(src => src.Comments.Select(t => t.Text)));
+            .ForMember(dest => dest.Comments, opt => opt.MapFrom(src => src.Comments.Select(t => $"[{t.AuthorId}] {t.Text}")));
+        CreateMap<CreateArticleRequest, Article>();
     }
 }

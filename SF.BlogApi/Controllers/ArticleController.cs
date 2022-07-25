@@ -44,6 +44,25 @@ namespace SF.BlogApi.Controllers
             return StatusCode(200, article);   
         }
 
+        /// <summary>
+        /// Просмотр списка статей
+        /// </summary>
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<IActionResult> GetAll()
+        {
+            var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
+
+            var _articles = await articleRepo.GetAllWithTags();
+            var articles = _mapper.Map<IEnumerable<Article>, IEnumerable<ArticleView>>(_articles);
+            var articleResponse = new GetArticlesResponse
+            {
+                ArticlesAmount = articles.Count(),
+                Articles = articles.ToArray()
+            };
+
+            return StatusCode(200, articleResponse);
+        }
 
         /// <summary>
         /// Создание статьи
@@ -53,60 +72,60 @@ namespace SF.BlogApi.Controllers
         [Authorize]
         public async Task<IActionResult> Create(CreateArticleRequest article)
         {
-            var commentRepo = _unitOfWork.GetRepository<Comment>() as CommentRepository;
-            var dbComment = _mapper.Map<Comment>(article);
-            await commentRepo.Create(dbComment);
+            var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
+            var dbArticle = _mapper.Map<Article>(article);
+            var currentUser = await HttpContext.GetCurrentUser();
+            dbArticle.AuthorId = currentUser.Id;
+            await articleRepo.Create(dbArticle);
 
-            return StatusCode(200, _mapper.Map<CommentView>(dbComment));
+            return StatusCode(200, _mapper.Map<ArticleView>(dbArticle));
         }
 
         /// <summary>
-        /// Редактирование комментария
+        /// Редактирование статьи
         /// </summary>
         [HttpPut]
         [Route("{id}")]
         [Authorize]
-        public async Task<IActionResult> Edit([FromRoute]int id, [FromBody]CreateCommentRequest comment)
+        public async Task<IActionResult> Edit([FromRoute]int id, [FromBody]CreateArticleRequest article)
         {
-            var currentUserLogin = HttpContext.User.Identity.Name;
-            var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;
-            var currentUser = await userRepo.GetByLogin(currentUserLogin);
+            var currentUser = await HttpContext.GetCurrentUser();
 
-            var commentRepo = _unitOfWork.GetRepository<Comment>() as CommentRepository;
-            var oldComment = await commentRepo.Get(id);
+            var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
+            var oldArticle = await articleRepo.Get(id);
 
-            if (oldComment == null)
-                return StatusCode(400, $"Ошибка: Комментарий с идентификатором {id} не существует.");
+            if (oldArticle == null)
+                return StatusCode(400, $"Ошибка: Статья с идентификатором {id} не существует.");
 
-            // Проверяем может ли текущий пользователь редактировать данный комментарий
+            // Проверяем может ли текущий пользователь редактировать данную статью
             // Для этого он должен быть автором или принадлежать к группе admin или moderator
-            //if (comment.AuthorId != currentUser.Id 
-            //    && currentUser.Roles.FirstOrDefault(r => r.Name == "admin" ) == null
-            //    && currentUser.Roles.FirstOrDefault(r => r.Name == "moderator") == null)
-            //    return StatusCode(400, $"Ошибка: Вы не имеете право редактировать этот комментарий.");
+            if (oldArticle.AuthorId != currentUser.Id
+                && currentUser.Roles.FirstOrDefault(r => r.Name == "admin") == null
+                && currentUser.Roles.FirstOrDefault(r => r.Name == "moderator") == null)
+                return StatusCode(400, $"Ошибка: Вы не имеете право редактировать эту статью.");
 
-            var newComment = _mapper.Map(comment, oldComment);
-            await commentRepo.Update(newComment);
+            var newArticle = _mapper.Map(article, oldArticle);
+            await articleRepo.Update(newArticle);
 
-            return StatusCode(200, _mapper.Map<CommentView>(newComment));
+            return StatusCode(200, _mapper.Map<ArticleView>(newArticle));
         }
 
         /// <summary>
-        /// Удаление комментария
+        /// Удаление статьи
         /// </summary>
         [HttpDelete]
         [Route("{id}")]
         [Authorize(Roles = "admin,moderator")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            var commentRepo = _unitOfWork.GetRepository<Comment>() as CommentRepository;
-            var comment = await commentRepo.Get(id);
-            if (comment == null)
-                return StatusCode(400, $"Ошибка: Комментарий с идентификатором {id} не существует.");
+            var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
+            var article = await articleRepo.Get(id);
+            if (article == null)
+                return StatusCode(400, $"Ошибка: Статья с идентификатором {id} не существует.");
 
-            await commentRepo.Delete(comment);
+            await articleRepo.Delete(article);
 
-            return StatusCode(200, $"Комментарий с ID {comment.Id}) удален");
+            return StatusCode(200, $"Статья с ID {id} удалена");
         }
 
 
