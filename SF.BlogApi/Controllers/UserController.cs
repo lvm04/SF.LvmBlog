@@ -105,7 +105,7 @@ namespace SF.BlogApi.Controllers
         /// </summary>
         [HttpPut]
         [Route("{id}")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Администратор")]
         public async Task<IActionResult> Edit([FromRoute]int id, [FromBody]CreateUserRequest user)
         {
             var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;
@@ -126,7 +126,7 @@ namespace SF.BlogApi.Controllers
         /// </summary>
         [HttpDelete]
         [Route("{id}")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Администратор")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;

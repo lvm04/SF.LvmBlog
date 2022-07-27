@@ -23,6 +23,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IRepository<User>, UserRepository>();
+builder.Services.AddScoped<IRepository<Role>, RoleRepository>();
 builder.Services.AddScoped<IRepository<Comment>, CommentRepository>();
 builder.Services.AddScoped<IRepository<Tag>, TagRepository>();
 builder.Services.AddScoped<IRepository<Article>, ArticleRepository>();

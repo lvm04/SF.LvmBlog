@@ -11,9 +11,6 @@ using System.Security.Claims;
 
 namespace SF.BlogApi.Controllers
 {
-    /// <summary>
-    /// Комментарии к статье
-    /// </summary>
     [ApiController]
     [Route("[controller]")]
     public class TagController : ControllerBase
@@ -85,7 +82,7 @@ namespace SF.BlogApi.Controllers
         /// </summary>
         [HttpPut]
         [Route("{id}")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Администратор")]
         public async Task<IActionResult> Edit([FromRoute]int id, [FromBody]string tagName)
         {
             var tagRepo = _unitOfWork.GetRepository<Tag>() as TagRepository;
@@ -103,7 +100,7 @@ namespace SF.BlogApi.Controllers
         /// </summary>
         [HttpDelete]
         [Route("{id}")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Администратор")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             var tagRepo = _unitOfWork.GetRepository<Tag>() as TagRepository;

@@ -9,6 +9,9 @@ namespace SF.BlogData
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
+        public DbSet<Article> Articles { get; set; }
+        public DbSet<Comment> Comments { get; set; }
+        public DbSet<Tag> Tags { get; set; }
 
 
 
@@ -38,9 +41,9 @@ namespace SF.BlogData
             public void Configure(EntityTypeBuilder<Role> builder)
             {
                 // Таблицы User, Role и отношение между ними "многие ко многим"
-                var role1 = new Role { Id = 1, Name = "admin" };
-                var role2 = new Role { Id = 2, Name = "user" };
-                var role3 = new Role { Id = 3, Name = "moderator" };
+                var role1 = new Role { Id = 1, Name = "Администратор", Description = "Управляет учетными записями, может удалять сущности" };
+                var role2 = new Role { Id = 2, Name = "Пользователь", Description = "Пишет статьи и комментирует" };
+                var role3 = new Role { Id = 3, Name = "Модератор", Description = "Отвечает за соблюдение участниками установленных правил и норм поведения" };
                 builder.HasData(role1, role2, role3);
             }
         }

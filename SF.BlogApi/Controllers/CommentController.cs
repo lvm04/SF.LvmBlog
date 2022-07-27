@@ -116,7 +116,7 @@ namespace SF.BlogApi.Controllers
         /// </summary>
         [HttpDelete]
         [Route("{id}")]
-        [Authorize(Roles = "admin,moderator")]
+        [Authorize(Roles = "Администратор,Модератор")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             var commentRepo = _unitOfWork.GetRepository<Comment>() as CommentRepository;

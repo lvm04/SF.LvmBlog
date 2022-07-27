@@ -11,9 +11,7 @@ using System.Security.Claims;
 
 namespace SF.BlogApi.Controllers
 {
-    /// <summary>
-    /// Комментарии к статье
-    /// </summary>
+    
     [ApiController]
     [Route("[controller]")]
     public class ArticleController : ControllerBase
@@ -115,7 +113,7 @@ namespace SF.BlogApi.Controllers
         /// </summary>
         [HttpDelete]
         [Route("{id}")]
-        [Authorize(Roles = "admin,moderator")]
+        [Authorize(Roles = "Администратор,Модератор")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
