@@ -9,8 +9,6 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        
-        CreateMap<User, UserView>().ForMember(dest => dest.Roles, opt => opt.MapFrom(src => src.Roles.Select(r => r.Name)));
         CreateMap<CreateUserRequest, User>();
 
         //CreateMap<Comment, CommentView>();

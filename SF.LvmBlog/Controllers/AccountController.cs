@@ -10,6 +10,7 @@ using SF.LvmBlog.ViewModels;
 using System.Web;
 using SF.BlogData;
 using SF.BlogData.Models;
+using SF.BlogData.Repository;
 
 namespace SF.LvmBlog.Controllers
 {
@@ -30,50 +31,53 @@ namespace SF.LvmBlog.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Регистрация пользователя
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(RegisterModel model)
+        public async Task<IActionResult> Register(CreateUserRequest user)
         {
             if (ModelState.IsValid)
             {
-                User user = await _context.Users.FirstOrDefaultAsync(u => u.Login == model.Login);
-                if (user == null)
+                var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;
+                var _user = await userRepo.GetByLogin(user?.Login);
+                if (_user == null)
                 {
-                    // добавляем пользователя в бд
-                    user = new User { Login = model.Login, Name = model.Name, Password = model.Password };
-                    Role userRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "user");
-                    if (userRole != null)
-                        user.Role = userRole;
+                    var roleRepo = _unitOfWork.GetRepository<Role>(false);
+                    var userRole = await roleRepo.Get(2);
 
-                    _context.Users.Add(user);
-                    await _context.SaveChangesAsync();
+                    var dbUser = _mapper.Map<User>(user);
+                    dbUser.Roles.Add(userRole);
+                    await userRepo.Create(dbUser);
 
-                    await Authenticate(user); // аутентификация
+                    await Authenticate(dbUser);             // аутентификация
 
                     return RedirectToAction("Index", "Home");
                 }
                 else
-                    ModelState.AddModelError("", "Некорректные логин и(или) пароль");
+                    ModelState.AddModelError("", $"Ошибка: Пользователь с таким логином уже существует.");
             }
-            return View(model);
+            return View(user);
         }
+
         [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginModel model)
+        public async Task<IActionResult> Login(LoginRequest user)
         {
             if (ModelState.IsValid)
             {
-                User user = await _context.Users
-                    .Include(u => u.Role)
-                    .FirstOrDefaultAsync(u => u.Login == model.Login && u.Password == model.Password);
-                if (user != null)
+                var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;
+                User _user = await userRepo.CheckCredentials(user.Login, user.Password);
+                if (_user != null)
                 {
-                    await Authenticate(user); // аутентификация
+                    await Authenticate(_user);       // аутентификация
 
                     string returnUrl = GetQueryParam(HttpContext.Request.Headers["Referer"].ToString(), "ReturnUrl");
                     if (!string.IsNullOrEmpty(returnUrl))
@@ -83,7 +87,7 @@ namespace SF.LvmBlog.Controllers
                 }
                 ModelState.AddModelError("", "Некорректные логин и(или) пароль");
             }
-            return View(model);
+            return View(user);
         }
 
         private string GetQueryParam(string uriStr, string paramName)
@@ -101,13 +105,15 @@ namespace SF.LvmBlog.Controllers
 
         private async Task Authenticate(User user)
         {
-            // создаем один claim
             var claims = new List<Claim>
             {
                 new Claim(ClaimsIdentity.DefaultNameClaimType, user.Login),
-                new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role?.Name)
             };
-            // создаем объект ClaimsIdentity
+            foreach (var role in user.Roles)
+            {
+                claims.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, role.Name));
+            }
+
             ClaimsIdentity id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType,
                 ClaimsIdentity.DefaultRoleClaimType);
             // установка аутентификационных куки

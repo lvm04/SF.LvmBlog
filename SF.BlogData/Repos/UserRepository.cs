@@ -25,4 +25,10 @@ public class UserRepository : Repository<User>
     {
         return await Set.Include(u => u.Roles).AsNoTracking().ToListAsync();
     }
+
+    public async Task<User> CheckCredentials(string login, string password)
+    {
+        return await Set.Include(u => u.Roles).FirstOrDefaultAsync(u => u.Login == login && u.Password == password);
+    }
+    
 }

@@ -15,4 +15,8 @@
     <ProjectReference Include="..\SF.BlogData\SF.BlogData.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\" />
+  </ItemGroup>
+
 </Project>

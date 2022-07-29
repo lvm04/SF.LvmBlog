@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SF.LvmBlog.Models;
+using SF.LvmBlog.ViewModels;
 using System.Diagnostics;
 
 namespace SF.LvmBlog.Controllers

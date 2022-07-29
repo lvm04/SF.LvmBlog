@@ -1,7 +1,10 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using SF.BlogData;
+using SF.BlogData.Models;
 using SF.BlogData.Repository;
+using SF.LvmBlog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,8 +33,12 @@ IMapper mapper = mapperConfig.CreateMapper();
 
 builder.Services.AddSingleton(mapper);
 
-
-
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.LoginPath = new Microsoft.AspNetCore.Http.PathString("/Account/Login");
+                    options.AccessDeniedPath = new Microsoft.AspNetCore.Http.PathString("/Account/Login");
+                });
 
 var app = builder.Build();
 
@@ -48,6 +55,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

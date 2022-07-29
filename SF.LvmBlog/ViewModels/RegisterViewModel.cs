@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace SF.LvmBlog.ViewModels;
-public class RegisterModel
+public class CreateUserRequest
 {
     [Required(ErrorMessage = "Не указан логин")]
     public string Login { get; set; }
@@ -19,7 +19,7 @@ public class RegisterModel
     public string Email { get; set; }
 }
 
-public class LoginModel
+public class LoginRequest
 {
     [Required(ErrorMessage = "Не указан логин")]
     public string Login { get; set; }
@@ -29,6 +29,7 @@ public class LoginModel
     public string Password { get; set; }
 }
 
+// Для отображения на странице вошедшего пользователя
 public class AuthModel
 {
     public string Login { get; set; }
