@@ -10,6 +10,12 @@ public class MappingProfile : Profile
     public MappingProfile()
     {
         CreateMap<CreateUserRequest, User>();
+        CreateMap<User, UserViewModel>();
+
+        CreateMap<Article, ArticleShortViewModel>()
+            .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.Author.Name))
+            .ForMember(dest => dest.Text, opt => opt.MapFrom(src => 
+                        src.Text.Length > 100 ? src.Text.Substring(0, 100) : src.Text.Substring(0, src.Text.Length)));
 
         //CreateMap<Comment, CommentView>();
         //CreateMap<CreateCommentRequest, Comment>();

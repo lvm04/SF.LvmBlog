@@ -1,7 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Html
-@using SF.BlogData.Models
 @using System.Text
-@model IEnumerable<User>
+@model IEnumerable<UserViewModel>
 
 @{
     ViewData["Title"] = "Пользователи";
@@ -43,7 +42,7 @@
 
 
 @functions {
-    private IHtmlContent RenderRoles(User user)
+    private IHtmlContent RenderRoles(UserViewModel user)
     {
         StringBuilder sb = new StringBuilder(1000); 
         foreach (var role in user.Roles)

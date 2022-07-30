@@ -1,38 +1,50 @@
 @model CreateUserRequest
- 
-<h2>Регистрация</h2>
- 
-<form asp-action="Register" asp-controller="Account" asp-anti-forgery="true">
-    <div class="validation" asp-validation-summary="ModelOnly"></div>
-    <div>
-        <div>
-            <label asp-for="Login">Введите логин</label><br />
-            <input type="text" asp-for="Login"/>
-            <span asp-validation-for="Login"> </span>
-        </div>
-        <div>
-            <label asp-for="Name">Введите имя</label><br />
-            <input type="text" asp-for="Name"/>
-            <span asp-validation-for="Name"> </span>
-        </div>
-         <div>
-            <label asp-for="Email">Введите Email</label><br />
-            <input type="text" asp-for="Email"/>
-            <span asp-validation-for="Email"> </span>
-        </div>
-        <div>
-            <label asp-for="Password">Введите пароль</label><br />
-            <input asp-for="Password" />
-            <span asp-validation-for="Password"> </span>
-        </div>
-        <div>
-            <label asp-for="ConfirmPassword">Повторите пароль</label><br />
-            <input asp-for="ConfirmPassword" />
-            <span asp-validation-for="ConfirmPassword"> </span>
-        </div>
-        <br>
-        <div>
-            <input class="btn btn-primary" type="submit" value="Регистрация" />
+
+
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-3 offset-3">
+
+            <h4>Регистрация</h4>
+            <form asp-action="Register" asp-controller="Account" asp-anti-forgery="true">
+                <div class="validation" asp-validation-summary="ModelOnly"></div>
+                <div>
+                    <div class="mb-3">
+                        <label asp-for="Login" class="form-label">Логин</label><br />
+                        <input type="text" asp-for="Login" class="form-control" />
+                        <span asp-validation-for="Login" class="text-danger"> </span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label">Имя</label><br />
+                        <input type="text" asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"> </span>
+                    </div>
+                    <div class="mb-3"> 
+                        <label asp-for="Email" class="form-label">Email</label><br />
+                        <input type="email" asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"> </span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label">Пароль</label><br />
+                        <input type="password" asp-for="Password" class="form-control" />
+                        <span asp-validation-for="Password" class="text-danger"> </span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="ConfirmPassword" class="form-label">Повторите пароль</label><br />
+                        <input type="password" asp-for="ConfirmPassword" class="form-control" />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"> </span>
+                    </div>
+                    <div class="mb-3">
+                        <input class="btn btn-primary" type="submit" value="Регистрация" />
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
-</form>
+</div>
+
+@section ValidateScripts {
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+}
+

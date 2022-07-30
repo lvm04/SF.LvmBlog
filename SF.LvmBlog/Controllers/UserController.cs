@@ -29,8 +29,9 @@ namespace SF.BlogApi.Controllers
             var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;
 
             var _users = await userRepo.GetAllWithRoles();
-            
-            return View(_users);
+            var users = _mapper.Map<IEnumerable<User>, IEnumerable<UserViewModel>>(_users);
+
+            return View(users);
         }
 
         /*

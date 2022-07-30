@@ -1,0 +1,46 @@
+﻿@using Microsoft.AspNetCore.Html
+@using System.Text
+@model IEnumerable<ArticleShortViewModel>
+
+@{
+    ViewData["Title"] = "Статьи";
+}
+
+
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-12">
+            <h4>Все статьи</h4>
+            @if (Model != null && Model.Count() > 0)
+            {
+                @foreach (var article in Model)
+                {
+                    <div class="card mb-3" style="width: 40rem;">
+                        <div class="card-body">
+                            <h5 class="card-title"><a href="#" class="nav-link">@article.Title</a></h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Автор: @article.AuthorName</h6>
+                            <p>@RenderTags(article)</p>
+                            <p class="card-text">@article.Text ...</p>
+                            <a href="#" class="btn btn-outline-secondary">Редактировать</a>
+                            <a href="#" class="btn btn-outline-danger">Удалить</a>
+                            <p class="card-text mt-3"><small class="text-muted">@article.TimeStamp.ToString("dd.MM.yyyy")</small></p>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+
+@functions {
+    private IHtmlContent RenderTags(ArticleShortViewModel article)
+    {
+        StringBuilder sb = new StringBuilder(1000);
+        foreach (var tag in article.Tags)
+        {
+            sb.Append($"<span class=\"badge bg-info me-1\">{tag.Name}</span>");
+        }
+        return Html.Raw(sb.ToString());
+    }
+}

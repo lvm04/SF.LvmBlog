@@ -15,7 +15,7 @@ namespace SF.LvmBlog.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            return RedirectToAction("Index", "Article");
         }
 
         public IActionResult Privacy()
