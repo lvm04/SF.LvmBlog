@@ -16,6 +16,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.Author.Name))
             .ForMember(dest => dest.Text, opt => opt.MapFrom(src => 
                         src.Text.Length > 100 ? src.Text.Substring(0, 100) : src.Text.Substring(0, src.Text.Length)));
+        CreateMap<Article, ArticleViewModel>();
 
         //CreateMap<Comment, CommentView>();
         //CreateMap<CreateCommentRequest, Comment>();

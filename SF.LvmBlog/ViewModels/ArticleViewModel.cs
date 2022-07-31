@@ -2,7 +2,7 @@
 
 namespace SF.LvmBlog.ViewModels;
 
-public class ArticleShortViewModel
+public class ArticleViewModel
 {
     public int Id { get; set; }
     public DateTime TimeStamp { get; set; }
@@ -11,4 +11,5 @@ public class ArticleShortViewModel
     public string AuthorName { get; set; }
     public int NumberViews { get; set; }
     public List<Tag> Tags { get; set; } = new();
+    public List<Comment> Comments { get; set; } = new();
 }

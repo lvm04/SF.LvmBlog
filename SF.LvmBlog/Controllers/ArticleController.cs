@@ -35,25 +35,29 @@ namespace SF.LvmBlog.Controllers
             return View(articles);
         }
 
-        /*
+        
         /// <summary>
         /// Получить статью по ID
         /// </summary>
         [HttpGet]
-        [Route("{id}")]
         public async Task<IActionResult> GetById([FromRoute]int id)
         {
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
             var _article = await articleRepo.GetById(id);
             if (_article == null)
-                return StatusCode(400, $"Ошибка: Статья с идентификатором {id} не существует.");
-            var article = _mapper.Map<ArticleView>(_article);
+            {
+                return NotFound($"Ошибка: Статья с идентификатором {id} не существует.");
+            }
+            var article = _mapper.Map<ArticleViewModel>(_article);
+
+            _article.NumberViews++;
+            await articleRepo.Update(_article);
             
-            return StatusCode(200, article);   
+            return View(article);   
         }
 
       
-       
+       /*
 
         /// <summary>
         /// Создание статьи
