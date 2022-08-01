@@ -6,7 +6,7 @@
         <div class="col-3 offset-3">
             <h4>Вход</h4>
             <form asp-action="Login" asp-controller="Account" asp-anti-forgery="true">
-                <div class="validation" asp-validation-summary="ModelOnly"></div>
+                <div class="validation text-danger" asp-validation-summary="ModelOnly"></div>
 
                 <div class="mb-3">
                     <label asp-for="Login" class="form-label">Логин</label> <br />

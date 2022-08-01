@@ -8,7 +8,7 @@ public class ArticleShortViewModel
     public DateTime TimeStamp { get; set; }
     public string Title { get; set; }
     public string Text { get; set; }
-    public string AuthorName { get; set; }
+    public User Author { get; set; }
     public int NumberViews { get; set; }
     public List<Tag> Tags { get; set; } = new();
 }

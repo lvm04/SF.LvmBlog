@@ -1,0 +1,14 @@
+﻿@model IEnumerable<TagViewModel>
+
+<div class="mb-3">
+    <input name="Tags[0]" type="hidden" value="false">
+    @foreach (var tag in Model)
+    {
+        <input type="checkbox" id="Tag_@tag.Id" name="Tags[@tag.Id]" value="true" @(tag.isChecked ? "checked" : "") />
+        @*<input type="checkbox" id="Tag_@tag.Id" name="Tags[@tag.Id]" @(tag.isChecked ? "checked" : "") />*@
+        <label for="Tag_@tag.Id" class="me-2">@tag.Name</label>
+        <input name="Tags[@tag.Id]" type="hidden" value="false">
+    }
+</div>
+
+

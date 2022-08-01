@@ -16,6 +16,7 @@ public class ArticleRepository : Repository<Article>
         return await Set.Include(a => a.Author)
                         .Include(a => a.Tags)
                         .Include(a => a.Comments)
+                        .ThenInclude(c => c.Author)
                         .FirstOrDefaultAsync(a => a.Id == id);
     }
 

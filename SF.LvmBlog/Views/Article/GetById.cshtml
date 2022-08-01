@@ -4,7 +4,39 @@
     ViewData["Title"] = "Статья";
 }
 
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-12">
+            <h4>@Model.Title</h4>
+            @await Html.PartialAsync("_Tags", Model.Tags)
+            <div>
+                @Model.Text
+            </div>
+
+            <p class="text-end fst-italic mt-3">@Model.Author.Name (@Model.Author.Email)</p>
+            <br />
+            <hr />
+            <h6 class="mb-3">Комментарии к статье</h6>
+            @foreach (var comment in Model.Comments)
+            {
+                <p class="border border-light">@comment.Text</p>
+                <p class="text-end" style="color: #008bff;">@comment.Author?.Name</p>
+            }
+        </div>
+
+        @if (User.Identity.IsAuthenticated)
+        {
+            <form asp-action="AddComment" asp-controller="Article" method="post">
+                <div class="mb-3">
+                    <input type="hidden" name="id" value="@Model.Id"/>
+                    <textarea class="form-control" name="text" rows="3"></textarea>
+                    <input class="btn btn-primary mt-3" type="submit" value="Оставить комментарий" />
+                </div>
+
+            </form>
+        }
+
+    </div>
+</div>
 
 
-<p>@Model.AuthorName</p>
-<p>@Model.Title</p>

@@ -1,0 +1,31 @@
+﻿@model ArticleCreateViewModel
+
+@{
+    ViewData["Title"] = "Новая статья";
+}
+
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-12">
+            <h4>Добавление статьи</h4>
+            <br />
+            @if (User.Identity.IsAuthenticated)
+            {
+                <form asp-action="Create" asp-controller="Article" method="post">
+                    @Html.CheckBox("Enable", false)
+                    @await Html.PartialAsync("_TagsEdit", Model.TagNames)
+                    <div class="mb-3">
+                        <label for="Title" class="form-label">Заголовок</label>
+                        <input type="text" class="form-control" name="Title" value="" />
+                        <label for="Text" class="form-label">Контент</label>
+                        <textarea class="form-control" name="Text" rows="10"></textarea>
+                        <input class="btn btn-primary mt-3" type="submit" value="Добавить" />
+                    </div>
+
+                </form>
+            }
+        </div>
+    </div>
+</div>
+
+

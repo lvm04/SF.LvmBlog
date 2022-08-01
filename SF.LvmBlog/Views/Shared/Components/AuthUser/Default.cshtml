@@ -4,7 +4,7 @@
 @if (Model.Login != null)
 {
     <li class="nav-item">
-        <a  class="nav-link text-dark" asp-action="Manage" asp-controller="Account">[ @Model.Name (@Model.Login) ]</a>
+        <a class="nav-link text-info" asp-action="Manage" asp-controller="Account">[ @Model.Name (@Model.Login) ]</a>
     </li>
     <li class="nav-item">
         <a class="nav-link text-dark" asp-action="Logout" asp-controller="Account">Выйти</a>

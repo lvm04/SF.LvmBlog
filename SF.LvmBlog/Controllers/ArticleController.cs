@@ -11,8 +11,8 @@ using System.Security.Claims;
 
 namespace SF.LvmBlog.Controllers
 {
-    
-    
+
+    [Route("{controller}")]
     public class ArticleController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -24,7 +24,11 @@ namespace SF.LvmBlog.Controllers
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// Список всех статей
+        /// </summary>
         [HttpGet]
+        [Route("")]
         public async Task<IActionResult> Index()
         {
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
@@ -40,6 +44,7 @@ namespace SF.LvmBlog.Controllers
         /// Получить статью по ID
         /// </summary>
         [HttpGet]
+        [Route("{id}")]
         public async Task<IActionResult> GetById([FromRoute]int id)
         {
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
@@ -56,26 +61,63 @@ namespace SF.LvmBlog.Controllers
             return View(article);   
         }
 
-      
-       /*
+        /// <summary>
+        /// Добавить комментарий
+        /// </summary>
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> AddComment(int id, string text)
+        {
+            var currentUser = await HttpContext.GetCurrentUser();
+            var commentRepo = _unitOfWork.GetRepository<Comment>() as CommentRepository;
+            var newComment = new Comment { AuthorId = currentUser.Id, ArticleId = id, Text = text};
+            await commentRepo.Create(newComment);
+
+            return RedirectToAction("GetById", "Article", new { id });
+        }
+
 
         /// <summary>
         /// Создание статьи
         /// </summary>
-        [HttpPost]
-        [Route("")]
+        [HttpGet]
         [Authorize]
-        public async Task<IActionResult> Create(CreateArticleRequest article)
+        [Route("New")]
+        public async Task<IActionResult> Create()
         {
-            var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
-            var dbArticle = _mapper.Map<Article>(article);
-            var currentUser = await HttpContext.GetCurrentUser();
-            dbArticle.AuthorId = currentUser.Id;
-            await articleRepo.Create(dbArticle);
+            var tagRepo = _unitOfWork.GetRepository<Tag>() as TagRepository;
+            var _tags = await tagRepo.GetAll();
 
-            return StatusCode(200, _mapper.Map<ArticleView>(dbArticle));
+            var article = new ArticleCreateViewModel();
+            article.Tags = _tags.Select(t => false).ToArray();
+            article.TagNames = _tags.Select(t => new TagViewModel { Id = t.Id, Name = t.Name, isChecked = false }).ToArray();
+
+            //dbArticle.AuthorId = currentUser.Id;
+            //await articleRepo.Create(dbArticle);
+
+
+            return View(article);
         }
 
+        
+        [HttpPost]
+        [Authorize]
+        [Route("Create")]
+        public async Task<IActionResult> Create(ArticleCreateViewModel article)
+        {
+            var currentUser = await HttpContext.GetCurrentUser();
+            var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
+            
+            //var dbArticle = _mapper.Map<Article>(article);
+            
+            //dbArticle.AuthorId = currentUser.Id;
+            //await articleRepo.Create(dbArticle);
+
+            return RedirectToAction("GetById", "Article");
+
+        }
+
+      /*
         /// <summary>
         /// Редактирование статьи
         /// </summary>

@@ -1,0 +1,9 @@
+﻿@using SF.BlogData.Models
+@model IEnumerable<Tag>
+
+<p>
+    @foreach (var tag in Model)
+    {
+        <span class="badge bg-info me-1">@tag.Name</span>
+    }
+</p>
