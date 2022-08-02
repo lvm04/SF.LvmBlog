@@ -18,7 +18,9 @@
                 {
                     <div class="card mb-3" style="width: 40rem;">
                         <div class="card-body">
-                            <h5 class="card-title"><a asp-controller="Article" asp-action="GetById" asp-route-id="@article.Id" class="nav-link">@article.Title</a></h5>
+                            <h5 class="card-title">
+                                <a asp-controller="Article" asp-action="GetById" asp-route-id="@article.Id" class="nav-link text-dark" style="padding-left: 0;">@article.Title</a>
+                            </h5>
                             <h6 class="card-subtitle mb-2 text-muted">Автор: @article.Author?.Name</h6>
                             @await Html.PartialAsync("_Tags", article.Tags)
                             <p class="card-text">@article.Text ...</p>
@@ -26,10 +28,14 @@
                             <div class="d-flex mb-3">
 
                                 @if (User.Identity.IsAuthenticated 
-                                    && (User.IsInRole("Администратор") || User.IsInRole("Модератор") || User.Identity.Name == article.Author?.Login ))
+                                    && (User.IsInRole(Roles.Admin.ToString()) || User.IsInRole(Roles.Moderator.ToString()) || User.Identity.Name == article.Author?.Login ))
                                 {
-                                    <a href="#" class="btn btn-outline-secondary me-3">Редактировать</a>
-                                    <a href="#" class="btn btn-outline-danger me-3">Удалить</a>
+                                    <a asp-controller="Article" asp-action="Edit" asp-route-id="@article.Id" class="btn btn-outline-secondary me-3">Редактировать</a>
+                                    @Html.ActionLink("Удалить", "Delete", new { id = article.Id }, 
+                                    new { 
+                                        onclick = $"return confirm('Вы действительно хотите удалить статью \"{article.Title}\" ?');",
+                                        @class = "btn btn-outline-danger me-3"
+                                    })
                                 }
                                 <span class="text-muted ms-auto">Просмотров: @article.NumberViews</span>
                             </div>

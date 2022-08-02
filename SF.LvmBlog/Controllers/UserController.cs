@@ -9,7 +9,7 @@ using SF.BlogData.Models;
 using SF.BlogData.Repository;
 using System.Security.Claims;
 
-namespace SF.BlogApi.Controllers
+namespace SF.LvmBlog.Controllers
 {
     public class UserController : Controller
     {
@@ -23,7 +23,7 @@ namespace SF.BlogApi.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Администратор")]
+        [AuthorizeRoles(Roles.Admin)]
         public async Task<IActionResult> Index()
         {
             var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;

@@ -111,7 +111,7 @@ namespace SF.LvmBlog.Controllers
             };
             foreach (var role in user.Roles)
             {
-                claims.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, role.Name));
+                claims.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, role.Value.ToString()));
             }
 
             ClaimsIdentity id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType,

@@ -17,11 +17,16 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Text, opt => opt.MapFrom(src => 
                         src.Text.Length > 100 ? src.Text.Substring(0, 100) : src.Text.Substring(0, src.Text.Length)));
         CreateMap<Article, ArticleViewModel>();
+        CreateMap<ArticleCreateViewModel, Article>()
+           .ForMember(dest => dest.Tags, opt => opt.Ignore());        // Теги установим в методе действия
+        CreateMap<Article, ArticleCreateViewModel>()
+            .ForMember(dest => dest.Tags, opt => opt.Ignore());
 
         //CreateMap<Comment, CommentView>();
         //CreateMap<CreateCommentRequest, Comment>();
         //CreateMap<EditCommentRequest, Comment>();
 
+        //  .BeforeMap((s, d) => d.Tags = new())
         //CreateMap<Article, ArticleView>()
         //    .ForMember(dest => dest.Author, opt => opt.MapFrom(src => $"{src.Author.Name} (ID: {src.Author.Id}, Login: {src.Author.Login})"))
         //    .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags.Select(t => t.Name)))

@@ -98,8 +98,8 @@ namespace SF.BlogApi.Controllers
             // Проверяем может ли текущий пользователь редактировать данную статью
             // Для этого он должен быть автором или принадлежать к группе admin или moderator
             if (oldArticle.AuthorId != currentUser.Id
-                && currentUser.Roles.FirstOrDefault(r => r.Name == "admin") == null
-                && currentUser.Roles.FirstOrDefault(r => r.Name == "moderator") == null)
+                && currentUser.Roles.FirstOrDefault(r => r.Name == "Администратор") == null
+                && currentUser.Roles.FirstOrDefault(r => r.Name == "Модератор") == null)
                 return StatusCode(400, $"Ошибка: Вы не имеете право редактировать эту статью.");
 
             var newArticle = _mapper.Map(article, oldArticle);

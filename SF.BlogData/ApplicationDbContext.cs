@@ -41,9 +41,12 @@ namespace SF.BlogData
             public void Configure(EntityTypeBuilder<Role> builder)
             {
                 // Таблицы User, Role и отношение между ними "многие ко многим"
-                var role1 = new Role { Id = 1, Name = "Администратор", Description = "Управляет учетными записями, может удалять сущности" };
-                var role2 = new Role { Id = 2, Name = "Пользователь", Description = "Пишет статьи и комментирует" };
-                var role3 = new Role { Id = 3, Name = "Модератор", Description = "Отвечает за соблюдение участниками установленных правил и норм поведения" };
+                var role1 = new Role { Id = 1, Name = "Администратор", Value = Models.Roles.Admin, 
+                    Description = "Управляет учетными записями, может удалять сущности" };
+                var role2 = new Role { Id = 2, Name = "Пользователь", Value = Models.Roles.User, 
+                    Description = "Пишет статьи и комментирует" };
+                var role3 = new Role { Id = 3, Name = "Модератор", Value = Models.Roles.Moderator, 
+                    Description = "Отвечает за соблюдение участниками установленных правил и норм поведения" };
                 builder.HasData(role1, role2, role3);
             }
         }

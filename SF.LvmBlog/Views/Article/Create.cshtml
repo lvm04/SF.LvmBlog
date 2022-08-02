@@ -1,27 +1,24 @@
 ﻿@model ArticleCreateViewModel
 
-@{
-    ViewData["Title"] = "Новая статья";
-}
 
 <div class="container">
     <div class="row mt-5">
         <div class="col-12">
-            <h4>Добавление статьи</h4>
+            <h4>@ViewData["Header"]</h4>
             <br />
             @if (User.Identity.IsAuthenticated)
             {
-                <form asp-action="Create" asp-controller="Article" method="post">
-                    @Html.CheckBox("Enable", false)
+                <form asp-action="@ViewData["Method"]" asp-controller="Article" method="post">
                     @await Html.PartialAsync("_TagsEdit", Model.TagNames)
+                    <input type="hidden" name="Id" value="@Model.Id" />
                     <div class="mb-3">
                         <label for="Title" class="form-label">Заголовок</label>
-                        <input type="text" class="form-control" name="Title" value="" />
+                        <input type="text" class="form-control" name="Title" value="@Model?.Title" />
+                        <br />
                         <label for="Text" class="form-label">Контент</label>
-                        <textarea class="form-control" name="Text" rows="10"></textarea>
-                        <input class="btn btn-primary mt-3" type="submit" value="Добавить" />
+                        <textarea class="form-control" name="Text" rows="10">@Model?.Text</textarea>
+                        <input class="btn btn-primary mt-3" type="submit" value="Сохранить" />
                     </div>
-
                 </form>
             }
         </div>

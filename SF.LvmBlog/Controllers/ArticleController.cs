@@ -39,13 +39,13 @@ namespace SF.LvmBlog.Controllers
             return View(articles);
         }
 
-        
+
         /// <summary>
         /// Получить статью по ID
         /// </summary>
         [HttpGet]
         [Route("{id}")]
-        public async Task<IActionResult> GetById([FromRoute]int id)
+        public async Task<IActionResult> GetById([FromRoute] int id)
         {
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
             var _article = await articleRepo.GetById(id);
@@ -57,8 +57,8 @@ namespace SF.LvmBlog.Controllers
 
             _article.NumberViews++;
             await articleRepo.Update(_article);
-            
-            return View(article);   
+
+            return View(article);
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace SF.LvmBlog.Controllers
         {
             var currentUser = await HttpContext.GetCurrentUser();
             var commentRepo = _unitOfWork.GetRepository<Comment>() as CommentRepository;
-            var newComment = new Comment { AuthorId = currentUser.Id, ArticleId = id, Text = text};
+            var newComment = new Comment { AuthorId = currentUser.Id, ArticleId = id, Text = text };
             await commentRepo.Create(newComment);
 
             return RedirectToAction("GetById", "Article", new { id });
@@ -78,7 +78,7 @@ namespace SF.LvmBlog.Controllers
 
 
         /// <summary>
-        /// Создание статьи
+        /// Форма создания статьи
         /// </summary>
         [HttpGet]
         [Authorize]
@@ -89,17 +89,19 @@ namespace SF.LvmBlog.Controllers
             var _tags = await tagRepo.GetAll();
 
             var article = new ArticleCreateViewModel();
-            article.Tags = _tags.Select(t => false).ToArray();
+            //article.Id = -1;
             article.TagNames = _tags.Select(t => new TagViewModel { Id = t.Id, Name = t.Name, isChecked = false }).ToArray();
 
-            //dbArticle.AuthorId = currentUser.Id;
-            //await articleRepo.Create(dbArticle);
-
+            ViewData["Title"] = "Новая статья";
+            ViewData["Header"] = "Добавление статьи";
+            ViewData["Method"] = "Create";
 
             return View(article);
         }
 
-        
+        /// <summary>
+        /// Создание статьи
+        /// </summary>
         [HttpPost]
         [Authorize]
         [Route("Create")]
@@ -107,65 +109,117 @@ namespace SF.LvmBlog.Controllers
         {
             var currentUser = await HttpContext.GetCurrentUser();
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
-            
-            //var dbArticle = _mapper.Map<Article>(article);
-            
-            //dbArticle.AuthorId = currentUser.Id;
-            //await articleRepo.Create(dbArticle);
+            var tagRepo = _unitOfWork.GetRepository<Tag>() as TagRepository;
 
-            return RedirectToAction("GetById", "Article");
+            var dbArticle = _mapper.Map<Article>(article);
+            dbArticle.AuthorId = currentUser.Id;
+            dbArticle.Tags = await GetRepoTags(tagRepo, article.Tags);
 
+            await articleRepo.Create(dbArticle);
+            return RedirectToAction("Index", "Article");
         }
 
-      /*
+        // Преобразование списка тегов
+        private async Task<List<Tag>> GetRepoTags(TagRepository repo, string[] tags)
+        {
+            var tagList = new List<Tag>();
+            if (tags == null || tags.Length == 0)
+                return tagList;
+
+            foreach (var tagName in tags)
+            {
+                var dbTag = await repo.GetByName(tagName);
+                if (dbTag != null)
+                    tagList.Add(dbTag);
+            }
+            return tagList;
+        }
+
+        /// <summary>
+        /// Форма редактирования статьи
+        /// </summary>
+        [HttpGet]
+        [Authorize]
+        [Route("{action}/{id}")]
+        public async Task<IActionResult> Edit([FromRoute] int id)
+        {
+            var currentUser = await HttpContext.GetCurrentUser();
+            var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
+            var oldArticle = await articleRepo.GetById(id);
+            if (oldArticle == null)
+            {
+                return NotFound($"Ошибка: Статья с идентификатором {id} не существует.");
+            }
+
+            if (oldArticle.AuthorId != currentUser.Id
+                 && !currentUser.Roles.Any(r => r.Value == Roles.Admin || r.Value == Roles.Moderator))
+                return NotFound($"Ошибка: Вы не имеете права редактировать эту статью.");
+
+            var article = _mapper.Map<ArticleCreateViewModel>(oldArticle);
+
+            var tagRepo = _unitOfWork.GetRepository<Tag>() as TagRepository;
+            var _tags = await tagRepo.GetAll();
+
+            article.TagNames = _tags.Select(t =>
+                new TagViewModel
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                    isChecked = oldArticle.Tags.Select(t1 => t1.Name).Contains(t.Name)
+                }).ToArray();
+
+            ViewData["Title"] = "Редактирование статьи";
+            ViewData["Header"] = "Редактирование статьи";
+            ViewData["Method"] = "Edit";
+
+            return View("Create", article);
+        }
+
         /// <summary>
         /// Редактирование статьи
         /// </summary>
-        [HttpPut]
-        [Route("{id}")]
+        [HttpPost]
+        [Route("{action}/{id}")]
         [Authorize]
-        public async Task<IActionResult> Edit([FromRoute]int id, [FromBody]CreateArticleRequest article)
+        public async Task<IActionResult> Edit([FromRoute] int id, [FromForm] ArticleCreateViewModel article)
         {
             var currentUser = await HttpContext.GetCurrentUser();
-
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
-            var oldArticle = await articleRepo.Get(id);
-
+            var oldArticle = await articleRepo.GetById(id);
             if (oldArticle == null)
-                return StatusCode(400, $"Ошибка: Статья с идентификатором {id} не существует.");
+            {
+                return NotFound($"Ошибка: Статья с идентификатором {id} не существует.");
+            }
 
-            // Проверяем может ли текущий пользователь редактировать данную статью
-            // Для этого он должен быть автором или принадлежать к группе admin или moderator
             if (oldArticle.AuthorId != currentUser.Id
-                && currentUser.Roles.FirstOrDefault(r => r.Name == "admin") == null
-                && currentUser.Roles.FirstOrDefault(r => r.Name == "moderator") == null)
-                return StatusCode(400, $"Ошибка: Вы не имеете право редактировать эту статью.");
+                && !currentUser.Roles.Any(r => r.Value == Roles.Admin || r.Value == Roles.Moderator))
+                return NotFound($"Ошибка: Вы не имеете права редактировать эту статью.");
 
+            var tagRepo = _unitOfWork.GetRepository<Tag>() as TagRepository;
             var newArticle = _mapper.Map(article, oldArticle);
-            await articleRepo.Update(newArticle);
 
-            return StatusCode(200, _mapper.Map<ArticleView>(newArticle));
+            newArticle.Tags = await GetRepoTags(tagRepo, article.Tags);
+
+            await articleRepo.Update(newArticle);
+            return RedirectToAction("Index", "Article");
         }
 
         /// <summary>
         /// Удаление статьи
         /// </summary>
-        [HttpDelete]
-        [Route("{id}")]
-        [Authorize(Roles = "Администратор,Модератор")]
+        [HttpGet]
+        [Route("{action}/{id}")]
+        [AuthorizeRoles(Roles.Admin, Roles.Moderator)]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
             var article = await articleRepo.Get(id);
             if (article == null)
-                return StatusCode(400, $"Ошибка: Статья с идентификатором {id} не существует.");
+                return NotFound($"Ошибка: Статья с идентификатором {id} не существует.");
 
             await articleRepo.Delete(article);
 
-            return StatusCode(200, $"Статья с ID {id} удалена");
+            return RedirectToAction("Index", "Article");
         }
-
-    */
-
     }
 }
