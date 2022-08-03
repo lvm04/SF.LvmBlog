@@ -21,15 +21,29 @@
             {
                 <p class="border border-light">@comment.Text</p>
                 <p class="text-end" style="color: #008bff;">@comment.Author?.Name</p>
+
+                <div class="d-flex mb-3">
+
+                    @if (User.Identity.IsAuthenticated
+                        && (User.IsInRole(Roles.Admin.ToString()) || User.IsInRole(Roles.Moderator.ToString()) || User.Identity.Name == comment.Author?.Login))
+                    {
+                        <a asp-controller="Comment" asp-action="Edit" asp-route-id="@comment.Id" class="btn btn-outline-secondary btn-sm me-3">Редактировать</a>
+                        @Html.ActionLink("Удалить", "Delete", "Comment", new { id = comment.Id },
+                            new {
+                                onclick = $"return confirm('Вы действительно хотите удалить комментарий?');",
+                                @class = "btn btn-outline-danger btn-sm me-3"
+                            })
+                    }
+                </div>
             }
         </div>
 
         @if (User.Identity.IsAuthenticated)
         {
-            <form asp-action="AddComment" asp-controller="Article" method="post">
+            <form asp-action="Add" asp-controller="Comment" method="post">
                 <div class="mb-3">
-                    <input type="hidden" name="id" value="@Model.Id"/>
-                    <textarea class="form-control" name="text" rows="3"></textarea>
+                    <input type="hidden" name="ArticleId" value="@Model.Id" />
+                    <textarea class="form-control" name="Text" rows="3"></textarea>
                     <input class="btn btn-primary mt-3" type="submit" value="Оставить комментарий" />
                 </div>
 

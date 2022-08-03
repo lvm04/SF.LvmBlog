@@ -61,21 +61,6 @@ namespace SF.LvmBlog.Controllers
             return View(article);
         }
 
-        /// <summary>
-        /// Добавить комментарий
-        /// </summary>
-        [HttpPost]
-        [Authorize]
-        public async Task<IActionResult> AddComment(int id, string text)
-        {
-            var currentUser = await HttpContext.GetCurrentUser();
-            var commentRepo = _unitOfWork.GetRepository<Comment>() as CommentRepository;
-            var newComment = new Comment { AuthorId = currentUser.Id, ArticleId = id, Text = text };
-            await commentRepo.Create(newComment);
-
-            return RedirectToAction("GetById", "Article", new { id });
-        }
-
 
         /// <summary>
         /// Форма создания статьи

@@ -22,15 +22,7 @@ public class MappingProfile : Profile
         CreateMap<Article, ArticleCreateViewModel>()
             .ForMember(dest => dest.Tags, opt => opt.Ignore());
 
-        //CreateMap<Comment, CommentView>();
-        //CreateMap<CreateCommentRequest, Comment>();
-        //CreateMap<EditCommentRequest, Comment>();
-
-        //  .BeforeMap((s, d) => d.Tags = new())
-        //CreateMap<Article, ArticleView>()
-        //    .ForMember(dest => dest.Author, opt => opt.MapFrom(src => $"{src.Author.Name} (ID: {src.Author.Id}, Login: {src.Author.Login})"))
-        //    .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags.Select(t => t.Name)))
-        //    .ForMember(dest => dest.Comments, opt => opt.MapFrom(src => src.Comments.Select(t => $"[{t.AuthorId}] {t.Text}")));
-        //CreateMap<CreateArticleRequest, Article>();
+        CreateMap<CommentCreateViewModel, Comment>();
+        CreateMap<Comment, CommentCreateViewModel>();
     }
 }

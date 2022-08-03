@@ -1,0 +1,25 @@
+﻿@model CommentCreateViewModel
+
+@{
+    ViewData["Title"] = "Комментарий";
+}
+
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-12">
+            <h5>@ViewData["Header"]</h5>
+            <br />
+            @if (User.Identity.IsAuthenticated)
+            {
+                <form asp-action="Edit" asp-controller="Comment" method="post">
+                    <div class="mb-3">
+                        <input type="hidden" name="Id" value="@Model.Id" />
+                        <input type="hidden" name="ArticleId" value="@Model.ArticleId" />
+                        <textarea class="form-control" name="Text" rows="3">@Model.Text</textarea>
+                        <input class="btn btn-primary mt-3" type="submit" value="Сохранить" />
+                    </div>
+                </form>
+            }
+        </div>
+    </div>
+</div>
