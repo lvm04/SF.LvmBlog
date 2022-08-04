@@ -46,7 +46,7 @@ namespace SF.LvmBlog.Controllers
             var newComment = new Comment { AuthorId = currentUser.Id, ArticleId = comment.ArticleId, Text = comment.Text };
             await commentRepo.Create(newComment);
 
-            return RedirectToAction("GetById", "Article", new { comment.ArticleId });
+            return RedirectToAction("GetById", "Article", new { id = comment.ArticleId });
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace SF.LvmBlog.Controllers
         /// Редактирование комментария
         /// </summary>
         [HttpPost]
-        [Route("{action}/{id?}")]
+        [Route("{action}")]
         [Authorize]
         public async Task<IActionResult> Edit([FromForm] CommentCreateViewModel comment)
         {
@@ -93,7 +93,7 @@ namespace SF.LvmBlog.Controllers
             var newComment = _mapper.Map(comment, oldComment);
 
             await commentRepo.Update(newComment);
-            return RedirectToAction("GetById", "Article", new { comment.ArticleId });
+            return RedirectToAction("GetById", "Article", new { id = comment.ArticleId });
         }
 
         /// <summary>

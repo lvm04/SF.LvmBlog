@@ -11,7 +11,7 @@
             <br />
             @if (User.Identity.IsAuthenticated)
             {
-                <form asp-action="Edit" asp-controller="Comment" method="post">
+                <form asp-action="Edit" asp-controller="Comment" asp-route-id="" method="post">
                     <div class="mb-3">
                         <input type="hidden" name="Id" value="@Model.Id" />
                         <input type="hidden" name="ArticleId" value="@Model.ArticleId" />
