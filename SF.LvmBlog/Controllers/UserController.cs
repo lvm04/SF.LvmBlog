@@ -11,6 +11,7 @@ using System.Security.Claims;
 
 namespace SF.LvmBlog.Controllers
 {
+    [Route("{controller}")]
     public class UserController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -24,6 +25,7 @@ namespace SF.LvmBlog.Controllers
 
         [HttpGet]
         [AuthorizeRoles(Roles.Admin)]
+        [Route("")]
         public async Task<IActionResult> Index()
         {
             var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;
@@ -34,20 +36,16 @@ namespace SF.LvmBlog.Controllers
             return View(users);
         }
 
-        /*
+        
         [HttpGet]
-        public async Task<IActionResult> GetById([FromRoute]int id)
+        [AuthorizeRoles(Roles.Admin)]
+        [Route("{id}")]
+        public IActionResult GetById([FromRoute]int id)
         {
-            var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;
-            var _user = await userRepo.GetById(id);
-            if (_user == null)
-                return StatusCode(400, $"Ошибка: Пользователь с идентификатором {id} не существует.");
-            var user = _mapper.Map<UserView>(_user);
-            
-            return StatusCode(200, user);  
+            return View();
         }
 
-        
+        /*
         [HttpGet]
         public async Task<IActionResult> GetByLogin([FromQuery]string login)
         {

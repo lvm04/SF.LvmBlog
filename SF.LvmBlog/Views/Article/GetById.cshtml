@@ -4,12 +4,15 @@
     ViewData["Title"] = "Статья";
 }
 
+<link rel="stylesheet" href="~/lib/fontawesome-free-6.1.1-web/css/all.css" />
+
 <div class="container">
     <div class="row mt-5">
         <div class="col-12">
             <h4>@Model.Title</h4>
-            @await Html.PartialAsync("_Tags", Model.Tags)
+            @await Html.PartialAsync("_Options", Model.Tags.Select(t => t.Name).ToList())
             <div>
+                <p class="text-end">@Model.TimeStamp.ToString("dd.MM.yyyy")</p>
                 @Model.Text
             </div>
 
@@ -17,23 +20,24 @@
             <br />
             <hr />
             <h6 class="mb-3">Комментарии к статье</h6>
+           
             @foreach (var comment in Model.Comments)
             {
-                <p class="border border-light">@comment.Text</p>
-                <p class="text-end" style="color: #008bff;">@comment.Author?.Name</p>
-
+                <p class="text-end">@comment.TimeStamp.ToString("dd.MM.yyyy")</p>
+                <p class="border border-1 p-2">@comment.Text</p>
+                
                 <div class="d-flex mb-3">
-
                     @if (User.Identity.IsAuthenticated
                         && (User.IsInRole(Roles.Admin.ToString()) || User.IsInRole(Roles.Moderator.ToString()) || User.Identity.Name == comment.Author?.Login))
                     {
-                        <a asp-controller="Comment" asp-action="Edit" asp-route-id="@comment.Id" class="btn btn-outline-secondary btn-sm me-3">Редактировать</a>
-                        @Html.ActionLink("Удалить", "Delete", "Comment", new { id = comment.Id },
-                            new {
-                                onclick = $"return confirm('Вы действительно хотите удалить комментарий?');",
-                                @class = "btn btn-outline-danger btn-sm me-3"
-                            })
+                        <a asp-controller="Comment" asp-action="Edit" asp-route-id="@comment.Id" class="me-3" title="Редактировать">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </a>
+                        <a asp-controller="Comment" asp-action="Delete" asp-route-id="@comment.Id" title="Удалить" 
+                            onclick="return confirm('Вы действительно хотите удалить комментарий?');"><i class="fa-solid fa-trash-can"></i>
+                        </a>
                     }
+                    <p class="text-muted ms-auto fst-italic">@comment.Author?.Name</p>
                 </div>
             }
         </div>

@@ -1,0 +1,54 @@
+﻿@using Microsoft.AspNetCore.Html
+@using System.Text
+@model IEnumerable<UserViewModel>
+
+@{
+    ViewData["Title"] = "Пользователи";
+}
+
+
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-12">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Id</th>
+                        <th scope="col">Login</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Roles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Count() > 0)
+                    {
+                        @foreach (var user in Model)
+                        {
+                            <tr>
+                                <td>@user.Id</td>
+                                <td>@user.Login</td>
+                                <td>@user.Name</td>
+                                <td>@user.Email</td>
+                                <td>@RenderRoles(user)</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+@functions {
+    private IHtmlContent RenderRoles(UserViewModel user)
+    {
+        StringBuilder sb = new StringBuilder(1000); 
+        foreach (var role in user.Roles)
+        {
+            sb.Append($"<span class=\"badge bg-secondary me-1\">{role.Name}</span>");  
+        }
+        return Html.Raw(sb.ToString());
+    }
+}

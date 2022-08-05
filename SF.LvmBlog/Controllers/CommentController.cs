@@ -118,7 +118,7 @@ namespace SF.LvmBlog.Controllers
 
             await commentRepo.Delete(comment);
 
-            return RedirectToAction("GetById", "Article", new { id = comment.AuthorId });
+            return RedirectToAction("GetById", "Article", new { id = comment.ArticleId });
         }
     }
 }

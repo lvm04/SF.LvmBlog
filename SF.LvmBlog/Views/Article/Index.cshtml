@@ -22,7 +22,7 @@
                                 <a asp-controller="Article" asp-action="GetById" asp-route-id="@article.Id" class="nav-link text-dark" style="padding-left: 0;">@article.Title</a>
                             </h5>
                             <h6 class="card-subtitle mb-2 text-muted">Автор: @article.Author?.Name</h6>
-                            @await Html.PartialAsync("_Tags", article.Tags)
+                            @await Html.PartialAsync("_Options", article.Tags.Select(t => t.Name).ToList())
                             <p class="card-text">@article.Text ...</p>
 
                             <div class="d-flex mb-3">
@@ -30,14 +30,14 @@
                                 @if (User.Identity.IsAuthenticated 
                                     && (User.IsInRole(Roles.Admin.ToString()) || User.IsInRole(Roles.Moderator.ToString()) || User.Identity.Name == article.Author?.Login ))
                                 {
-                                    <a asp-controller="Article" asp-action="Edit" asp-route-id="@article.Id" class="btn btn-outline-secondary me-3">Редактировать</a>
+                                    <a asp-controller="Article" asp-action="Edit" asp-route-id="@article.Id" class="btn btn-outline-secondary btn-sm me-3">Редактировать</a>
                                     @Html.ActionLink("Удалить", "Delete", new { id = article.Id }, 
                                     new { 
                                         onclick = $"return confirm('Вы действительно хотите удалить статью \"{article.Title}\" ?');",
-                                        @class = "btn btn-outline-danger me-3"
+                                        @class = "btn btn-outline-danger btn-sm me-3"
                                     })
                                 }
-                                <span class="text-muted ms-auto">Просмотров: @article.NumberViews</span>
+                                <span class="text-muted ms-auto" style="font-size: 0.8rem">Просмотров: @article.NumberViews</span>
                             </div>
 
                             <p class="card-text"><small class="text-muted">@article.TimeStamp.ToString("dd.MM.yyyy")</small></p>

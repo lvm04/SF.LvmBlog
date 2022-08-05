@@ -6,49 +6,40 @@
     ViewData["Title"] = "Пользователи";
 }
 
-
 <div class="container">
     <div class="row mt-5">
         <div class="col-12">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th scope="col">Id</th>
-                        <th scope="col">Login</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Roles</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model != null && Model.Count() > 0)
-                    {
-                        @foreach (var user in Model)
-                        {
-                            <tr>
-                                <td>@user.Id</td>
-                                <td>@user.Login</td>
-                                <td>@user.Name</td>
-                                <td>@user.Email</td>
-                                <td>@RenderRoles(user)</td>
-                            </tr>
-                        }
-                    }
-                </tbody>
-            </table>
+            <h4>Пользователи</h4>
+            @if (Model != null && Model.Count() > 0)
+            {
+                @foreach (var user in Model)
+                {
+                    <div class="card mb-3" style="width: 40rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a asp-controller="User" asp-action="GetById" asp-route-id="@user.Id" class="nav-link text-dark" style="padding-left: 0;">@user.Login</a>
+                            </h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Имя: @user.Name</h6>
+                            @await Html.PartialAsync("_Options", user.Roles.Select(r => r.Name).ToList())
+                            <p class="card-text">Почта: @user.Email</p>
+
+                            <div class="d-flex mb-3">
+
+                                @if (User.Identity.IsAuthenticated && User.IsInRole(Roles.Admin.ToString()))
+                                {
+                                    <a asp-controller="User" asp-action="Edit" asp-route-id="@user.Id" class="btn btn-outline-secondary btn-sm me-3">Редактировать</a>
+                                    @Html.ActionLink("Удалить", "Delete", new { id = user.Id }, 
+                                    new { 
+                                        onclick = $"return confirm('Вы действительно хотите удалить пользователя \"{user.Name}\" ?');",
+                                        @class = "btn btn-outline-danger btn-sm me-3"
+                                    })
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
         </div>
     </div>
 </div>
 
-
-@functions {
-    private IHtmlContent RenderRoles(UserViewModel user)
-    {
-        StringBuilder sb = new StringBuilder(1000); 
-        foreach (var role in user.Roles)
-        {
-            sb.Append($"<span class=\"badge bg-secondary me-1\">{role.Name}</span>");  
-        }
-        return Html.Raw(sb.ToString());
-    }
-}

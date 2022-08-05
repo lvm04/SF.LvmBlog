@@ -75,7 +75,7 @@ namespace SF.LvmBlog.Controllers
 
             var article = new ArticleCreateViewModel();
             //article.Id = -1;
-            article.TagNames = _tags.Select(t => new TagViewModel { Id = t.Id, Name = t.Name, isChecked = false }).ToArray();
+            article.TagNames = _tags.Select(t => new OptionViewModel { Id = t.Id, Name = t.Name, isChecked = false }).ToArray();
 
             ViewData["Title"] = "Новая статья";
             ViewData["Header"] = "Добавление статьи";
@@ -146,7 +146,7 @@ namespace SF.LvmBlog.Controllers
             var _tags = await tagRepo.GetAll();
 
             article.TagNames = _tags.Select(t =>
-                new TagViewModel
+                new OptionViewModel
                 {
                     Id = t.Id,
                     Name = t.Name,

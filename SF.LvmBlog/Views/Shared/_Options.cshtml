@@ -1,0 +1,9 @@
+﻿@model IEnumerable<string>
+
+@* Отображение опций *@
+<p>
+    @foreach (var tag in Model)
+    {
+        <span class="badge me-1" style="color: #44739D; background-color: #E1ECF4;">@tag</span>
+    }
+</p>
