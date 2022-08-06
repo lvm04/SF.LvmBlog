@@ -45,51 +45,93 @@ namespace SF.LvmBlog.Controllers
             return View();
         }
 
-        /*
+        /// <summary>
+        /// Форма редактирования пользователя
+        /// </summary>
         [HttpGet]
-        public async Task<IActionResult> GetByLogin([FromQuery]string login)
+        [AuthorizeRoles(Roles.Admin)]
+        [Route("{action}/{id}")]
+        public async Task<IActionResult> Edit([FromRoute] int id)
         {
             var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;
-            var _user = await userRepo.GetByLogin(login);
-            if (_user == null)
-                return StatusCode(400, $"Ошибка: Пользователь с именем {login} не существует.");
-            var user = _mapper.Map<UserView>(_user);
-
-            return StatusCode(200, user);
-        }
-
-
-        [HttpPut]
-        [Authorize(Roles = "Администратор")]
-        public async Task<IActionResult> Edit([FromRoute]int id, [FromBody]CreateUserRequest user)
-        {
-            var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;
-            var oldUser = await userRepo.Get(id);
+            var oldUser = await userRepo.GetById(id);
             if (oldUser == null)
-                return StatusCode(400, $"Ошибка: Пользователь с идентификатором {id} не существует.");
+                return NotFound($"Ошибка: Пользователя с идентификатором {id} не существует.");
 
-            var newUser = _mapper.Map(user, oldUser);
+            var user = _mapper.Map<UserCreateViewModel>(oldUser);
 
-            // Роли пока не редактируем
-            await userRepo.Update(newUser);
+            var roleRepo = _unitOfWork.GetRepository<Role>() as RoleRepository;
+            var _roles = await roleRepo.GetAll();
 
-            return StatusCode(200, _mapper.Map<UserView>(newUser));
+            user.Roles = _roles.Select(t =>
+                new OptionViewModel
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                    isChecked = oldUser.Roles.Select(r => r.Name).Contains(t.Name)
+                }).ToArray();
+
+            ViewData["Title"] = "Редактирование пользователя";
+            ViewData["Header"] = "Редактирование пользователя";
+            return View(user);
         }
 
-       
-        [HttpDelete]
-        [Authorize(Roles = "Администратор")]
+        /// <summary>
+        /// Редактирование пользователя
+        /// </summary>
+        [HttpPost]
+        [AuthorizeRoles(Roles.Admin)]
+        [Route("{action}")]
+        public async Task<IActionResult> Edit([FromForm] UserCreateViewModel user)
+        {
+            if (ModelState.IsValid)
+            {
+                var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;
+                var oldUser = await userRepo.GetById(user.Id);
+                if (oldUser == null)
+                    return NotFound($"Ошибка: Пользователя с идентификатором {user.Id} не существует.");
+
+                var roleRepo = _unitOfWork.GetRepository<Role>() as RoleRepository;
+
+                var newUser = _mapper.Map(user, oldUser);
+                newUser.Roles = await GetRepoRoles(roleRepo, user.OptionNames);
+
+                await userRepo.Update(newUser);
+                return RedirectToAction("Index", "User");
+            }
+            return View(user);
+
+        }
+        
+        [HttpGet]
+        [AuthorizeRoles(Roles.Admin)]
+        [Route("{action}/{id}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;
             var user = await userRepo.Get(id);
             if (user == null)
-                return StatusCode(400, $"Ошибка: Пользователь с идентификатором {id} не существует.");
+                return NotFound($"Ошибка: Пользователя с идентификатором {id} не существует.");
 
             await userRepo.Delete(user);
 
-            return StatusCode(200, $"Пользователь {user.Name} (ID {user.Id}) удален");
+            return RedirectToAction("Index", "User");
         }
-        */
+
+        // Преобразование списка ролей
+        private async Task<List<Role>> GetRepoRoles(RoleRepository repo, string[] options)
+        {
+            var roleList = new List<Role>();
+            if (options == null || options.Length == 0)
+                return roleList;
+
+            foreach (var option in options)
+            {
+                var dbRole = await repo.GetByName(option);
+                if (dbRole != null)
+                    roleList.Add(dbRole);
+            }
+            return roleList;
+        }
     }
 }

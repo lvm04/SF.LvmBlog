@@ -9,7 +9,7 @@
             @if (User.Identity.IsAuthenticated)
             {
                 <form asp-action="@ViewData["Method"]" asp-controller="Article" method="post">
-                    @await Html.PartialAsync("_OptionsEdit", Model.TagNames)
+                    @await Html.PartialAsync("_OptionsEdit", Model.Tags)
                     <input type="hidden" name="Id" value="@Model.Id" />
                     <div class="mb-3">
                         <label for="Title" class="form-label">Заголовок</label>

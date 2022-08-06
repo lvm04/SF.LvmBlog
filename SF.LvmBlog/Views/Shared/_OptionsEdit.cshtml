@@ -3,10 +3,10 @@
 @* Выбор опций с помощью чекбоксов *@
 
 <div class="mb-3">
-    @foreach (var tag in Model)
+    @foreach (var option in Model)
     {
-        <input type="checkbox" id="Tag_@tag.Id" name="Tags" value="@tag.Name" @(tag.isChecked ? "checked" : "") />
-        <label for="Tag_@tag.Id" class="me-2">@tag.Name</label>
+        <input type="checkbox" id="OptionNames_@option.Id" name="OptionNames" value="@option.Name" @(option.isChecked ? "checked" : "") />
+        <label for="OptionNames_@option.Id" class="me-2">@option.Name</label>
     }
 </div>
 

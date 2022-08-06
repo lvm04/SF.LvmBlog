@@ -17,6 +17,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Text, opt => opt.MapFrom(src => 
                         src.Text.Length > 100 ? src.Text.Substring(0, 100) : src.Text.Substring(0, src.Text.Length)));
         CreateMap<Article, ArticleViewModel>();
+
         CreateMap<ArticleCreateViewModel, Article>()
            .ForMember(dest => dest.Tags, opt => opt.Ignore());        // Теги установим в методе действия
         CreateMap<Article, ArticleCreateViewModel>()
@@ -24,5 +25,10 @@ public class MappingProfile : Profile
 
         CreateMap<CommentCreateViewModel, Comment>();
         CreateMap<Comment, CommentCreateViewModel>();
+
+        CreateMap<User, UserCreateViewModel>()
+            .ForMember(dest => dest.Roles, opt => opt.Ignore());
+        CreateMap<UserCreateViewModel, User>()
+            .ForMember(dest => dest.Roles, opt => opt.Ignore());
     }
 }

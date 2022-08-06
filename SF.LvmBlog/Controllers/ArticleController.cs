@@ -74,8 +74,7 @@ namespace SF.LvmBlog.Controllers
             var _tags = await tagRepo.GetAll();
 
             var article = new ArticleCreateViewModel();
-            //article.Id = -1;
-            article.TagNames = _tags.Select(t => new OptionViewModel { Id = t.Id, Name = t.Name, isChecked = false }).ToArray();
+            article.Tags = _tags.Select(t => new OptionViewModel { Id = t.Id, Name = t.Name, isChecked = false }).ToArray();
 
             ViewData["Title"] = "Новая статья";
             ViewData["Header"] = "Добавление статьи";
@@ -98,7 +97,7 @@ namespace SF.LvmBlog.Controllers
 
             var dbArticle = _mapper.Map<Article>(article);
             dbArticle.AuthorId = currentUser.Id;
-            dbArticle.Tags = await GetRepoTags(tagRepo, article.Tags);
+            dbArticle.Tags = await GetRepoTags(tagRepo, article.OptionNames);
 
             await articleRepo.Create(dbArticle);
             return RedirectToAction("Index", "Article");
@@ -145,7 +144,7 @@ namespace SF.LvmBlog.Controllers
             var tagRepo = _unitOfWork.GetRepository<Tag>() as TagRepository;
             var _tags = await tagRepo.GetAll();
 
-            article.TagNames = _tags.Select(t =>
+            article.Tags = _tags.Select(t =>
                 new OptionViewModel
                 {
                     Id = t.Id,
@@ -183,7 +182,7 @@ namespace SF.LvmBlog.Controllers
             var tagRepo = _unitOfWork.GetRepository<Tag>() as TagRepository;
             var newArticle = _mapper.Map(article, oldArticle);
 
-            newArticle.Tags = await GetRepoTags(tagRepo, article.Tags);
+            newArticle.Tags = await GetRepoTags(tagRepo, article.OptionNames);
 
             await articleRepo.Update(newArticle);
             return RedirectToAction("Index", "Article");

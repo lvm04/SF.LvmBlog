@@ -1,0 +1,54 @@
+﻿@model UserCreateViewModel
+
+
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-4 offset-2">
+            <h4>@ViewData["Header"]</h4>
+            <br />
+            @if (User.Identity.IsAuthenticated)
+            {
+                <form asp-action="Edit" asp-controller="User" asp-route-id="" method="post">
+                    @await Html.PartialAsync("_OptionsEdit", Model.Roles)
+                    <input type="hidden" name="Id" value="@Model.Id" />
+
+                    <div class="validation text-danger" asp-validation-summary="ModelOnly"></div>
+                    <div>
+                        <div class="mb-3">
+                            <label asp-for="Login" class="form-label">Логин</label><br />
+                            <input type="text" asp-for="Login" class="form-control" value="@Model.Login" disabled />
+                            <input type="hidden" name="Login" value="@Model.Login" />
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label">Имя</label><br />
+                            <input type="text" asp-for="Name" class="form-control" value="@Model.Name" />
+                            <span asp-validation-for="Name" class="text-danger"> </span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label">Email</label><br />
+                            <input type="email" asp-for="Email" class="form-control" value="@Model.Email" />
+                            <span asp-validation-for="Email" class="text-danger"> </span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label">Пароль</label><br />
+                            <input type="password" asp-for="Password" class="form-control" value="@Model.Password" />
+                            <span asp-validation-for="Password" class="text-danger"> </span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="ConfirmPassword" class="form-label">Повторите пароль</label><br />
+                            <input type="password" asp-for="ConfirmPassword" class="form-control" value="@Model.Password" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger"> </span>
+                        </div>
+                        <div class="mb-3">
+                            <input class="btn btn-primary" type="submit" value="Сохранить" />
+                        </div>
+                    </div>
+                </form>
+            }
+        </div>
+    </div>
+</div>
+
+@section ValidationScripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
