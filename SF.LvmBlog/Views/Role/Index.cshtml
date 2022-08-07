@@ -1,0 +1,38 @@
+﻿@model IEnumerable<RoleViewModel>
+
+@{
+    ViewData["Title"] = "Роли";
+}
+
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-12">
+            <h4>Роли</h4>
+            <a class="nav-link" asp-controller="Role" asp-action="New" style="padding-left: 0;">Добавить роль</a>
+            @if (Model != null && Model.Count() > 0)
+            {
+                @foreach (var role in Model)
+                {
+                    <div class="card mb-3" style="width: 20rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">@role.Name</h5>
+
+                            <div class="d-flex mb-3">
+                                @if (User.Identity.IsAuthenticated && User.IsInRole(Roles.Admin.ToString()))
+                                {
+                                    <a asp-controller="Role" asp-action="Edit" asp-route-id="@role.Id" class="btn btn-outline-secondary btn-sm me-3">Редактировать</a>
+                                    @Html.ActionLink("Удалить", "Delete", new { id = role.Id }, 
+                                    new { 
+                                        onclick = $"return confirm('Вы действительно хотите удалить роль \"{role.Name}\" ?');",
+                                        @class = "btn btn-outline-danger btn-sm me-3"
+                                    })
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+

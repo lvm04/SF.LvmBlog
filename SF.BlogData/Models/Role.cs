@@ -17,6 +17,6 @@ namespace SF.BlogData.Models
 
     public enum Roles
     {
-        Admin, User, Moderator
+        None = 0, Admin, User, Moderator
     }
 }

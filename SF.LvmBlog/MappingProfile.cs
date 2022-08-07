@@ -30,5 +30,11 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Roles, opt => opt.Ignore());
         CreateMap<UserCreateViewModel, User>()
             .ForMember(dest => dest.Roles, opt => opt.Ignore());
+
+        CreateMap<Tag, TagViewModel>();
+        CreateMap<TagViewModel, Tag>();
+
+        CreateMap<Role, RoleViewModel>();
+        CreateMap<RoleViewModel, Role>();
     }
 }

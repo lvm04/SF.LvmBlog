@@ -1,0 +1,27 @@
+﻿@model RoleViewModel
+
+
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-4 offset-2">
+            <h4>@ViewData["Header"]</h4>
+            <br />
+            @if (User.Identity.IsAuthenticated)
+            {
+                <form asp-action="@ViewData["Method"]" asp-controller="Role" asp-route-id="" method="post">
+                    <input type="hidden" name="Id" value="@Model.Id" />
+                    <div class="mb-3">
+                        <label for="Name" class="form-label">Название</label>
+                        <input type="text" id="Name" name="Name" class="form-control" value="@Model.Name" />
+                        <br />
+                        <label for="Description" class="form-label">Описание</label>
+                        <textarea class="form-control" id="Description" name="Description" rows="5">@Model.Description</textarea>
+                        <input class="btn btn-primary mt-3" type="submit" value="Сохранить" />
+                    </div>
+                </form>
+            }
+        </div>
+    </div>
+</div>
+
+

@@ -1,0 +1,38 @@
+﻿@model IEnumerable<TagViewModel>
+
+@{
+    ViewData["Title"] = "Теги";
+}
+
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-12">
+            <h4>Теги</h4>
+            <a class="nav-link" asp-controller="Tag" asp-action="New" style="padding-left: 0;">Добавить тег</a>
+            @if (Model != null && Model.Count() > 0)
+            {
+                @foreach (var tag in Model)
+                {
+                    <div class="card mb-3" style="width: 20rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">@tag.Name</h5>
+
+                            <div class="d-flex mb-3">
+                                @if (User.Identity.IsAuthenticated && User.IsInRole(Roles.Admin.ToString()))
+                                {
+                                    <a asp-controller="Tag" asp-action="Edit" asp-route-id="@tag.Id" class="btn btn-outline-secondary btn-sm me-3">Редактировать</a>
+                                    @Html.ActionLink("Удалить", "Delete", new { id = tag.Id }, 
+                                    new { 
+                                        onclick = $"return confirm('Вы действительно хотите удалить тег \"{tag.Name}\" ?');",
+                                        @class = "btn btn-outline-danger btn-sm me-3"
+                                    })
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
