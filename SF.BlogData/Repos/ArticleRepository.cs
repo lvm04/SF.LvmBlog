@@ -40,13 +40,18 @@ public class ArticleRepository : Repository<Article>
 
     public async Task<IEnumerable<Article>> GetByText(string text)
     {
-        var result = await Set.Include(a => a.Author)
+        return await Set.Include(a => a.Author)
                         .Include(a => a.Tags)
                         .Include(a => a.Comments)
                         .AsNoTracking()
+                        .Where(a => EF.Functions.Like(a.Text, $"%{text}%") ||
+                                    EF.Functions.Like(a.Title, $"%{text}%")
+                        //.Where(a => EF.Functions.Like(a.Text.ToLower(), $"%{text.ToLower()}%") ||
+                        //            EF.Functions.Like(a.Title.ToLower(), $"%{text.ToLower()}%")
+                        )
                         .ToListAsync();
 
-        return result.Where(a => a.Title.ToLower().IndexOf(text.ToLower()) != -1 || a.Text.ToLower().IndexOf(text.ToLower()) != -1);
+        // На SQLite функция lower() по умолчанию не работает с кириллицей. Необходима компиляция SQLite с опцией SQLITE_ENABLE_ICU 
     }
 
 }
