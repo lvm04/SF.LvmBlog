@@ -33,10 +33,34 @@ namespace SF.LvmBlog.Controllers
             var _users = await userRepo.GetAllWithRoles();
             var users = _mapper.Map<IEnumerable<User>, IEnumerable<UserViewModel>>(_users);
 
+            ViewData["Header"] = "Пользователи";
             return View(users);
         }
 
-        
+        [HttpGet]
+        [AuthorizeRoles(Roles.Admin)]
+        [Route("{action}")]
+        public async Task<IActionResult> Search([FromQuery] string searchText)
+        {
+            var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;
+
+            IEnumerable<User> _users;
+            if (string.IsNullOrEmpty(searchText))
+            {
+                ViewData["Header"] = $"Пользователи";
+                _users = await userRepo.GetAllWithRoles();
+            }
+            else
+            {
+                ViewData["Header"] = $"Пользователи по фильтру \"{searchText}\"";
+                _users = await userRepo.GetByText(searchText);
+            }
+
+            var users = _mapper.Map<IEnumerable<User>, IEnumerable<UserViewModel>>(_users);
+            return View("Index", users);
+        }
+
+
         [HttpGet]
         [AuthorizeRoles(Roles.Admin)]
         [Route("{id}")]

@@ -36,6 +36,7 @@ namespace SF.LvmBlog.Controllers
             var _articles = await articleRepo.GetAllWithTags();
             var articles = _mapper.Map<IEnumerable<Article>, IEnumerable<ArticleShortViewModel>>(_articles);
 
+            ViewData["Header"] = "Все статьи";
             return View(articles);
         }
 
@@ -59,6 +60,31 @@ namespace SF.LvmBlog.Controllers
             await articleRepo.Update(_article);
 
             return View(article);
+        }
+
+        /// <summary>
+        /// Поиск статей
+        /// </summary>
+        [HttpGet]
+        [Route("{action}")]
+        public async Task<IActionResult> Search([FromQuery] string searchText)
+        {
+            var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
+
+            IEnumerable<Article> _articles;
+            if (string.IsNullOrEmpty(searchText))
+            {
+                ViewData["Header"] = $"Все статьи";
+                _articles = await articleRepo.GetAllWithTags();
+            }
+            else
+            {
+                ViewData["Header"] = $"Статьи по фильтру \"{searchText}\"";
+                _articles = await articleRepo.GetByText(searchText);
+            }
+
+            var articles = _mapper.Map<IEnumerable<Article>, IEnumerable<ArticleShortViewModel>>(_articles);
+            return View("Index", articles);
         }
 
 

@@ -38,4 +38,15 @@ public class ArticleRepository : Repository<Article>
                         .ToListAsync();
     }
 
+    public async Task<IEnumerable<Article>> GetByText(string text)
+    {
+        var result = await Set.Include(a => a.Author)
+                        .Include(a => a.Tags)
+                        .Include(a => a.Comments)
+                        .AsNoTracking()
+                        .ToListAsync();
+
+        return result.Where(a => a.Title.ToLower().IndexOf(text.ToLower()) != -1 || a.Text.ToLower().IndexOf(text.ToLower()) != -1);
+    }
+
 }

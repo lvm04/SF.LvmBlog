@@ -9,7 +9,7 @@
 <div class="container">
     <div class="row mt-5">
         <div class="col-12">
-            <h4>Пользователи</h4>
+            <h4>@ViewData["Header"]</h4>
             @if (Model != null && Model.Count() > 0)
             {
                 @foreach (var user in Model)
@@ -29,11 +29,11 @@
                                 @if (User.Identity.IsAuthenticated && User.IsInRole(Roles.Admin.ToString()))
                                 {
                                     <a asp-controller="User" asp-action="Edit" asp-route-id="@user.Id" class="btn btn-outline-secondary btn-sm me-3">Редактировать</a>
-                                    @Html.ActionLink("Удалить", "Delete", new { id = user.Id }, 
-                                    new { 
-                                        onclick = $"return confirm('Вы действительно хотите удалить пользователя \"{user.Name}\" ?');",
-                                        @class = "btn btn-outline-danger btn-sm me-3"
-                                    })
+                                    @Html.ActionLink("Удалить", "Delete", new { id = user.Id },
+                        new {
+                        onclick = $"return confirm('Вы действительно хотите удалить пользователя \"{user.Name}\" ?');",
+                        @class = "btn btn-outline-danger btn-sm me-3"
+                        })
                                 }
                             </div>
                         </div>
@@ -44,3 +44,7 @@
     </div>
 </div>
 
+<script>
+    let form = document.getElementsByName("search")[0];
+    form.action = "/User/Search";
+</script>

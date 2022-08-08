@@ -6,12 +6,11 @@
     ViewData["Title"] = "Статьи";
 }
 
-
 <div class="container">
     <div class="row mt-5">
         <div class="col-12">
-            <h4>Все статьи</h4>
-            <a class="nav-link" asp-controller="Article" asp-action="New">Добавить статью</a>
+            <h4>@ViewData["Header"]</h4>
+            <a class="nav-link" asp-controller="Article" asp-action="New" style="padding-left: 0;">Добавить статью</a>
             @if (Model != null && Model.Count() > 0)
             {
                 @foreach (var article in Model)
@@ -27,15 +26,15 @@
 
                             <div class="d-flex mb-3">
 
-                                @if (User.Identity.IsAuthenticated 
-                                    && (User.IsInRole(Roles.Admin.ToString()) || User.IsInRole(Roles.Moderator.ToString()) || User.Identity.Name == article.Author?.Login ))
+                                @if (User.Identity.IsAuthenticated
+                               && (User.IsInRole(Roles.Admin.ToString()) || User.IsInRole(Roles.Moderator.ToString()) || User.Identity.Name == article.Author?.Login))
                                 {
                                     <a asp-controller="Article" asp-action="Edit" asp-route-id="@article.Id" class="btn btn-outline-secondary btn-sm me-3">Редактировать</a>
-                                    @Html.ActionLink("Удалить", "Delete", new { id = article.Id }, 
-                                    new { 
-                                        onclick = $"return confirm('Вы действительно хотите удалить статью \"{article.Title}\" ?');",
-                                        @class = "btn btn-outline-danger btn-sm me-3"
-                                    })
+                                    @Html.ActionLink("Удалить", "Delete", new { id = article.Id },
+                        new {
+                        onclick = $"return confirm('Вы действительно хотите удалить статью \"{article.Title}\" ?');",
+                        @class = "btn btn-outline-danger btn-sm me-3"
+                        })
                                 }
                                 <span class="text-muted ms-auto" style="font-size: 0.8rem">Просмотров: @article.NumberViews</span>
                             </div>
@@ -48,3 +47,8 @@
         </div>
     </div>
 </div>
+
+<script>
+    let form = document.getElementsByName("search")[0];
+    form.action = "/Article/Search";
+</script>
