@@ -1,6 +1,5 @@
-﻿@using Microsoft.AspNetCore.Html
-@using System.Text
-@model IEnumerable<ArticleShortViewModel>
+﻿@model ArticleListViewModel
+@addTagHelper *, SF.LvmBlog
 
 @{
     ViewData["Title"] = "Статьи";
@@ -8,14 +7,28 @@
 
 <div class="container">
     <div class="row mt-5">
-        <div class="col-12">
+        <div class="col-6 offset-3">
             <h4>@ViewData["Header"]</h4>
-            <a class="nav-link" asp-controller="Article" asp-action="New" style="padding-left: 0;">Добавить статью</a>
-            @if (Model != null && Model.Count() > 0)
+            <br />
+            <div class="d-flex mb-3">
+                <a class="btn btn-outline-success btn-sm" asp-controller="Article" asp-action="New">Добавить статью</a>
+                <div class="dropdown ms-auto">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                        Сортировка
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li><a class="dropdown-item" href="#">Action</a></li>
+                        <li><a class="dropdown-item" href="#">Another action</a></li>
+                        <li><a class="dropdown-item" href="#">Something else here</a></li>
+                    </ul>
+                </div>
+
+            </div>
+            @if (Model.Articles != null && Model.Articles.Count() > 0)
             {
-                @foreach (var article in Model)
+                @foreach (var article in Model.Articles)
                 {
-                    <div class="card mb-3" style="width: 40rem;">
+                    <div class="card mb-3">
                         <div class="card-body">
                             <h5 class="card-title">
                                 <a asp-controller="Article" asp-action="GetById" asp-route-id="@article.Id" class="nav-link text-dark" style="padding-left: 0;">@article.Title</a>
@@ -44,9 +57,15 @@
                     </div>
                 }
             }
+
+            <br />
+            <page-link page-model="Model.PageViewModel" page-action="Index" other=""
+                       property="@Model.SortViewModel.Current" up="@Model.SortViewModel.Up">
+            </page-link>
         </div>
     </div>
 </div>
+
 
 <script>
     let form = document.getElementsByName("search")[0];

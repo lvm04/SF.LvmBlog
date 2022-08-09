@@ -17,6 +17,7 @@ namespace SF.LvmBlog.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private IMapper _mapper;
+        const int PAGE_SIZE = 10;
 
         public ArticleController(IUnitOfWork unitOfWork, IMapper mapper)
         {
@@ -29,15 +30,26 @@ namespace SF.LvmBlog.Controllers
         /// </summary>
         [HttpGet]
         [Route("")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1, SortState sortOrder = SortState.Id, bool up = true)
         {
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
 
             var _articles = await articleRepo.GetAllWithTags();
-            var articles = _mapper.Map<IEnumerable<Article>, IEnumerable<ArticleShortViewModel>>(_articles);
+            var articles = _mapper.Map<IEnumerable<Article>, IEnumerable<ArticleViewModel>>(_articles);
+
+            // Пагинация
+            var count = articles.Count();
+            var items = articles.Skip((page - 1) * PAGE_SIZE).Take(PAGE_SIZE).ToList();
+
+            var articlesModel = new ArticleListViewModel()
+            {
+                Articles = items,
+                PageViewModel = new PageViewModel(count, page, PAGE_SIZE),
+                SortViewModel = new SortViewModel(sortOrder, up)
+            };
 
             ViewData["Header"] = "Все статьи";
-            return View(articles);
+            return View(articlesModel);
         }
 
 
@@ -83,7 +95,22 @@ namespace SF.LvmBlog.Controllers
                 _articles = await articleRepo.GetByText(searchText);
             }
 
-            var articles = _mapper.Map<IEnumerable<Article>, IEnumerable<ArticleShortViewModel>>(_articles);
+            var articles = _mapper.Map<IEnumerable<Article>, IEnumerable<ArticleViewModel>>(_articles);
+            return View("Index", articles);
+        }
+
+        /// <summary>
+        /// Статьи по тегу
+        /// </summary>
+        [HttpGet]
+        [Route("{action}")]
+        public async Task<IActionResult> GetByTag([FromQuery] string tagName)
+        {
+            var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
+            var _articles = await articleRepo.GetByTag(tagName);
+
+            ViewData["Header"] = $"Статьи по тегу \"{tagName}\"";
+            var articles = _mapper.Map<IEnumerable<Article>, IEnumerable<ArticleViewModel>>(_articles);
             return View("Index", articles);
         }
 
@@ -230,6 +257,19 @@ namespace SF.LvmBlog.Controllers
             await articleRepo.Delete(article);
 
             return RedirectToAction("Index", "Article");
+        }
+
+        /// <summary>
+        /// Генерация статей
+        /// </summary>
+        [HttpGet]
+        [Route("{action}/{amount}")]
+        public async Task<IActionResult> Generate([FromRoute] int amount)
+        {
+            var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
+            await articleRepo.Generate(amount);
+
+            return RedirectToAction("Index");
         }
     }
 }

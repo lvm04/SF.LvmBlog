@@ -12,10 +12,10 @@ public class MappingProfile : Profile
         CreateMap<CreateUserRequest, User>();
         CreateMap<User, UserViewModel>();
 
-        CreateMap<Article, ArticleShortViewModel>()
+        //CreateMap<Article, ArticleShortViewModel>()
             //.ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.Author.Name))
-            .ForMember(dest => dest.Text, opt => opt.MapFrom(src => 
-                        src.Text.Length > 100 ? src.Text.Substring(0, 100) : src.Text.Substring(0, src.Text.Length)));
+            //.ForMember(dest => dest.Text, opt => opt.MapFrom(src => 
+            //            src.Text.Length > 100 ? src.Text.Substring(0, 100) : src.Text.Substring(0, src.Text.Length)));
         CreateMap<Article, ArticleViewModel>();
 
         CreateMap<ArticleCreateViewModel, Article>()
