@@ -8,6 +8,9 @@ using SF.BlogData;
 using SF.BlogData.Models;
 using SF.BlogData.Repository;
 using System.Security.Claims;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace SF.LvmBlog.Controllers
 {
@@ -16,34 +19,50 @@ namespace SF.LvmBlog.Controllers
     public class ArticleController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
-        private IMapper _mapper;
-        const int PAGE_SIZE = 10;
+        private IMapper _mapper, _mapperMod;
+        const int PAGE_SIZE = 5;
 
         public ArticleController(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+
+            // Модификация маппера для обрезания текста статьи
+            var configuration = new MapperConfiguration(cfg => {
+                cfg.CreateMap<Article, ArticleViewModel>()
+                    .ForMember(dest => dest.Text, opt => opt.MapFrom(src =>
+                        src.Text.Length > 100 ? src.Text.Substring(0, 100) : src.Text.Substring(0, src.Text.Length)));
+            });
+            _mapperMod = configuration.CreateMapper();
         }
 
         /// <summary>
-        /// Список всех статей
+        /// Список статей
         /// </summary>
         [HttpGet]
         [Route("")]
         public async Task<IActionResult> Index(int page = 1, SortState sortOrder = SortState.Id, bool up = true)
         {
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
+            IQueryable<Article> _articles = articleRepo.Set.Include(a => a.Author).Include(a => a.Tags);
 
-            var _articles = await articleRepo.GetAllWithTags();
-            var articles = _mapper.Map<IEnumerable<Article>, IEnumerable<ArticleViewModel>>(_articles);
+            // Сортировка
+            _articles = sortOrder switch
+            {
+                SortState.Rating => up ? _articles.OrderBy(d => d.NumberViews) : _articles.OrderByDescending(d => d.NumberViews),
+                SortState.CreateDate => up ? _articles.OrderBy(d => d.TimeStamp) : _articles.OrderByDescending(d => d.TimeStamp),
+                _ => _articles.OrderBy(d => d.Id)
+            };
 
             // Пагинация
-            var count = articles.Count();
-            var items = articles.Skip((page - 1) * PAGE_SIZE).Take(PAGE_SIZE).ToList();
+            var count = await _articles.CountAsync();
+            var items = await _articles.Skip((page - 1) * PAGE_SIZE).Take(PAGE_SIZE).ToListAsync();
+
+            var articles = _mapperMod.Map<IEnumerable<Article>, IEnumerable<ArticleViewModel>>(items);
 
             var articlesModel = new ArticleListViewModel()
             {
-                Articles = items,
+                Articles = articles,
                 PageViewModel = new PageViewModel(count, page, PAGE_SIZE),
                 SortViewModel = new SortViewModel(sortOrder, up)
             };
@@ -95,8 +114,15 @@ namespace SF.LvmBlog.Controllers
                 _articles = await articleRepo.GetByText(searchText);
             }
 
-            var articles = _mapper.Map<IEnumerable<Article>, IEnumerable<ArticleViewModel>>(_articles);
-            return View("Index", articles);
+            var articles = _mapperMod.Map<IEnumerable<Article>, IEnumerable<ArticleViewModel>>(_articles);
+
+            var articlesModel = new ArticleListViewModel()
+            {
+                Articles = articles,
+                PageViewModel = new PageViewModel(articles.Count(), 1, PAGE_SIZE),
+                SortViewModel = new SortViewModel(SortState.Id, true)
+            };
+            return View("Index", articlesModel);
         }
 
         /// <summary>
@@ -110,8 +136,16 @@ namespace SF.LvmBlog.Controllers
             var _articles = await articleRepo.GetByTag(tagName);
 
             ViewData["Header"] = $"Статьи по тегу \"{tagName}\"";
-            var articles = _mapper.Map<IEnumerable<Article>, IEnumerable<ArticleViewModel>>(_articles);
-            return View("Index", articles);
+            var articles = _mapperMod.Map<IEnumerable<Article>, IEnumerable<ArticleViewModel>>(_articles);
+
+            var articlesModel = new ArticleListViewModel()
+            {
+                Articles = articles,
+                PageViewModel = new PageViewModel(articles.Count(), 1, PAGE_SIZE),
+                SortViewModel = new SortViewModel(SortState.Id, true)
+            };
+
+            return View("Index", articlesModel);
         }
 
 

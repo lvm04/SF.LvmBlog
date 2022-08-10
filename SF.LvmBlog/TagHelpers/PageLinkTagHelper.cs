@@ -11,7 +11,6 @@ public class PageLinkTagHelper : TagHelper
 {
     public SortState Property { get; set; }
     public bool Up { get; set; }
-
     public string Other { get; set; }           // остальные параметры
 
     private IUrlHelperFactory urlHelperFactory;
