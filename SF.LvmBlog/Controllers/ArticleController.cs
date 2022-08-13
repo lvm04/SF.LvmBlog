@@ -41,10 +41,15 @@ namespace SF.LvmBlog.Controllers
         /// </summary>
         [HttpGet]
         [Route("")]
-        public async Task<IActionResult> Index(int page = 1, SortState sortOrder = SortState.Id, bool up = true)
+        public async Task<IActionResult> Index(int page = 1, SortState sortOrder = SortState.Id, bool up = true, string searchText = "")
         {
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
-            IQueryable<Article> _articles = articleRepo.Set.Include(a => a.Author).Include(a => a.Tags);
+            IQueryable<Article> _articles = articleRepo.Set.Include(a => a.Author).Include(a => a.Tags).AsNoTracking();
+
+            // Фильтрация
+            if (!string.IsNullOrWhiteSpace(searchText))
+                _articles = _articles.Where(a => EF.Functions.Like(a.Text, $"%{searchText}%") ||
+                                                 EF.Functions.Like(a.Title, $"%{searchText}%"));
 
             // Сортировка
             _articles = sortOrder switch
@@ -64,10 +69,12 @@ namespace SF.LvmBlog.Controllers
             {
                 Articles = articles,
                 PageViewModel = new PageViewModel(count, page, PAGE_SIZE),
-                SortViewModel = new SortViewModel(sortOrder, up)
+                SortViewModel = new SortViewModel(sortOrder, up),
+                SearchText = searchText
             };
 
-            ViewData["Header"] = "Все статьи";
+            ViewData["SearchText"] = searchText;
+            ViewData["Header"] = "Статьи";
             return View(articlesModel);
         }
 
@@ -94,7 +101,7 @@ namespace SF.LvmBlog.Controllers
         }
 
         /// <summary>
-        /// Поиск статей
+        /// Поиск статей (не исп.)
         /// </summary>
         [HttpGet]
         [Route("{action}")]

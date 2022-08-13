@@ -3,6 +3,7 @@
 
 @{
     ViewData["Title"] = "Статьи";
+    string searchParams = $"&searchText={Model.SearchText}";
 }
 
 <div class="container">
@@ -13,13 +14,24 @@
             <div class="d-flex mb-3">
                 <a class="btn btn-outline-success btn-sm" asp-controller="Article" asp-action="New">Добавить статью</a>
                 <div class="dropdown ms-auto">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
                         Сортировка
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <li><a class="dropdown-item" href="#">Action</a></li>
-                        <li><a class="dropdown-item" href="#">Another action</a></li>
-                        <li><a class="dropdown-item" href="#">Something else here</a></li>
+                        <li>
+                            <sort-link action="Index" up="@Model.SortViewModel.Up"
+                                       other="@searchParams"
+                                       current="@Model.SortViewModel.Current" property="Rating">
+                                Кол-во просмотров
+                            </sort-link>
+                        </li>
+                        <li>
+                            <sort-link action="Index" up="@Model.SortViewModel.Up"
+                                       other="@searchParams"
+                                       current="@Model.SortViewModel.Current" property="CreateDate">
+                                Дата
+                            </sort-link>
+                        </li>
                     </ul>
                 </div>
 
@@ -59,7 +71,7 @@
             }
 
             <br />
-            <page-link page-model="@Model.PageViewModel" page-action="Index" other=""
+            <page-link page-model="@Model.PageViewModel" page-action="Index" other="@searchParams"
                        property="@Model.SortViewModel.Current" up="@Model.SortViewModel.Up">
             </page-link>
         </div>
@@ -69,5 +81,5 @@
 
 <script>
     let form = document.getElementsByName("search")[0];
-    form.action = "/Article/Search";
+    form.action = "/Article";
 </script>

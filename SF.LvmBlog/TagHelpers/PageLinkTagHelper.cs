@@ -32,8 +32,7 @@ public class PageLinkTagHelper : TagHelper
 
         // набор ссылок будет представлять список ul
         TagBuilder tag = new TagBuilder("ul");
-        tag.AddCssClass("pagination");
-
+        tag.AddCssClass("pagination pagination-sm justify-content-center");
 
         // ссылка на первую страницу
         if (PageModel.PageNumber != 1)
