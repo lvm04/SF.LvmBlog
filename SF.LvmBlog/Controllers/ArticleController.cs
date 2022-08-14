@@ -41,7 +41,8 @@ namespace SF.LvmBlog.Controllers
         /// </summary>
         [HttpGet]
         [Route("")]
-        public async Task<IActionResult> Index(int page = 1, SortState sortOrder = SortState.Id, bool up = true, string searchText = "")
+        public async Task<IActionResult> Index(int page = 1, SortState sortOrder = SortState.Id, bool up = true, 
+                                                string searchText = "", string tagName = "")
         {
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
             IQueryable<Article> _articles = articleRepo.Set.Include(a => a.Author).Include(a => a.Tags).AsNoTracking();
@@ -50,6 +51,9 @@ namespace SF.LvmBlog.Controllers
             if (!string.IsNullOrWhiteSpace(searchText))
                 _articles = _articles.Where(a => EF.Functions.Like(a.Text, $"%{searchText}%") ||
                                                  EF.Functions.Like(a.Title, $"%{searchText}%"));
+
+            if (!string.IsNullOrWhiteSpace(tagName))
+                _articles = _articles.Where(a => a.Tags.Select(t => t.Name).Contains(tagName));
 
             // Сортировка
             _articles = sortOrder switch
@@ -70,10 +74,12 @@ namespace SF.LvmBlog.Controllers
                 Articles = articles,
                 PageViewModel = new PageViewModel(count, page, PAGE_SIZE),
                 SortViewModel = new SortViewModel(sortOrder, up),
-                SearchText = searchText
+                SearchText = searchText,
+                TagName = tagName
             };
 
             ViewData["SearchText"] = searchText;
+            ViewData["TagName"] = tagName;
             ViewData["Header"] = "Статьи";
             return View(articlesModel);
         }
@@ -133,7 +139,7 @@ namespace SF.LvmBlog.Controllers
         }
 
         /// <summary>
-        /// Статьи по тегу
+        /// Статьи по тегу (не исп.)
         /// </summary>
         [HttpGet]
         [Route("{action}")]

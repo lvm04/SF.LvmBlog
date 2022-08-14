@@ -8,4 +8,5 @@ public class ArticleListViewModel
     public PageViewModel PageViewModel { get; set; }
     public SortViewModel SortViewModel { get; set; }
     public string SearchText { get; set; }
+    public string TagName { get; set; }
 }

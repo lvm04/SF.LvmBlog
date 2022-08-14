@@ -34,6 +34,7 @@
                         </li>
                     </ul>
                     <form class="d-flex" name="search" method="get">
+                        <input type="hidden" name="tagName" value="@ViewData["TagName"]">
                         <input class="form-control me-2" type="search" placeholder="Поиск" name="searchText" value="@ViewData["SearchText"]">
                         <button class="me-4" type="submit" title="Поиск" style="border-width: 0; background-color: inherit;" >
                             <i class="fa-solid fa-magnifying-glass"></i>
