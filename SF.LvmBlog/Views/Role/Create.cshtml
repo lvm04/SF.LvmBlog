@@ -9,10 +9,12 @@
             @if (User.Identity.IsAuthenticated)
             {
                 <form asp-action="@ViewData["Method"]" asp-controller="Role" asp-route-id="" method="post">
+                    <div class="validation text-danger" asp-validation-summary="ModelOnly"></div>
                     <input type="hidden" name="Id" value="@Model.Id" />
                     <div class="mb-3">
                         <label for="Name" class="form-label">Название</label>
-                        <input type="text" id="Name" name="Name" class="form-control" value="@Model.Name" />
+                        <input type="text" asp-for="Name" class="form-control" value="@Model.Name" />
+                        <span asp-validation-for="Name" class="text-danger"> </span>
                         <br />
                         <label for="Description" class="form-label">Описание</label>
                         <textarea class="form-control" id="Description" name="Description" rows="5">@Model.Description</textarea>
@@ -24,4 +26,6 @@
     </div>
 </div>
 
-
+@section ValidationScripts {
+    <partial name="_ValidationScriptsPartial" />
+}

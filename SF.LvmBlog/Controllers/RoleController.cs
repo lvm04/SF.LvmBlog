@@ -47,10 +47,7 @@ namespace SF.LvmBlog.Controllers
         [Route("New")]
         public IActionResult Create()
         {
-            ViewData["Title"] = "Роль";
-            ViewData["Header"] = "Новая роль";
-            ViewData["Method"] = "Create";
-         
+            ViewSettings(true);
             return View(new RoleViewModel());
         }
 
@@ -62,10 +59,32 @@ namespace SF.LvmBlog.Controllers
         [Route("Create")]
         public async Task<IActionResult> Create([FromForm] RoleViewModel role)
         {
+            if (!ModelState.IsValid)
+            {
+                ViewSettings(true);
+                return View(role);
+            }
+
             var roleRepo = _unitOfWork.GetRepository<Role>() as RoleRepository;
             var newRole = _mapper.Map<Role>(role);
             await roleRepo.Create(newRole);
             return RedirectToAction("Index");
+        }
+
+        private void ViewSettings(bool isCreate)
+        {
+            if (isCreate)
+            {
+                ViewData["Title"] = "Роль";
+                ViewData["Header"] = "Новая роль";
+                ViewData["Method"] = "Create";
+            }
+            else
+            {
+                ViewData["Title"] = "Роль";
+                ViewData["Header"] = "Редактирование роли";
+                ViewData["Method"] = "Edit";
+            }
         }
 
         /// <summary>
@@ -84,10 +103,8 @@ namespace SF.LvmBlog.Controllers
             }
 
             var role = _mapper.Map<RoleViewModel>(dbRole);
-            ViewData["Title"] = "Роль";
-            ViewData["Header"] = "Редактирование роли";
-            ViewData["Method"] = "Edit";
 
+            ViewSettings(false);
             return View("Create", role);
         }
 
@@ -99,6 +116,12 @@ namespace SF.LvmBlog.Controllers
         [Route("{action}")]
         public async Task<IActionResult> Edit([FromForm] RoleViewModel role)
         {
+            if (!ModelState.IsValid)
+            {
+                ViewSettings(false);
+                return View("Create", role);
+            }
+
             var roleRepo = _unitOfWork.GetRepository<Role>() as RoleRepository;
             var oldRole = await roleRepo.Get(role.Id);
             if (oldRole == null)

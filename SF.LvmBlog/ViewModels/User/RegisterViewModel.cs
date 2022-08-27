@@ -16,6 +16,7 @@ public class CreateUserRequest
     [Compare("Password", ErrorMessage = "Пароль введен неверно")]
     public string ConfirmPassword { get; set; }
 
+    [RegularExpression(@"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}", ErrorMessage = "Некорректный адрес")]
     public string Email { get; set; }
 }
 

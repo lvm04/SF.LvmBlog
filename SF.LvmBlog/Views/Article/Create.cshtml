@@ -9,15 +9,18 @@
             @if (User.Identity.IsAuthenticated)
             {
                 <form asp-action="@ViewData["Method"]" asp-controller="Article" method="post">
+                    <div class="validation text-danger" asp-validation-summary="ModelOnly"></div>
                     @await Html.PartialAsync("_OptionsEdit", Model.Tags)
                     <input type="hidden" name="Id" value="@Model.Id" />
                     <div class="mb-3">
                         <label for="Title" class="form-label">Заголовок</label>
-                        <input type="text" class="form-control" name="Title" value="@Model?.Title" />
+                        <input type="text" class="form-control" asp-for="Title" value="@Model?.Title" />
+                        <span asp-validation-for="Title" class="text-danger"> </span>
                         <br />
                         <label for="Text" class="form-label">Контент</label>
-                        <textarea class="form-control" name="Text" rows="10">@Model?.Text</textarea>
+                        <textarea class="form-control" asp-for="Text" rows="10">@Model?.Text</textarea>
                         <input class="btn btn-primary mt-3" type="submit" value="Сохранить" />
+                        <span asp-validation-for="Text" class="text-danger"> </span>
                     </div>
                 </form>
             }
@@ -25,4 +28,6 @@
     </div>
 </div>
 
-
+@section ValidationScripts {
+    <partial name="_ValidationScriptsPartial" />
+}
