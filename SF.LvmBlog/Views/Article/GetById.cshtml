@@ -45,8 +45,10 @@
             <form asp-action="Add" asp-controller="Comment" method="post">
                 <div class="mb-3">
                     <input type="hidden" name="ArticleId" value="@Model.Id" />
-                    <textarea class="form-control" name="Text" rows="3"></textarea>
-                    <input class="btn btn-primary mt-3" type="submit" value="Оставить комментарий" />
+                    <label for="CommentText" class="form-label">Ваш комментарий</label>
+                    <textarea class="form-control" asp-for="CommentText" rows="3"></textarea>
+                    <span asp-validation-for="CommentText" class="text-danger"> </span>
+                    <input class="btn btn-primary mt-3" type="submit" value="Сохранить" />
                 </div>
 
             </form>
@@ -55,4 +57,6 @@
     </div>
 </div>
 
-
+@section ValidationScripts {
+    <partial name="_ValidationScriptsPartial" />
+}

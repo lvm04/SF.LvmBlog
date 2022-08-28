@@ -11,6 +11,7 @@ using System.Security.Claims;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Data;
 
 namespace SF.LvmBlog.Controllers
 {
@@ -176,11 +177,25 @@ namespace SF.LvmBlog.Controllers
             var article = new ArticleCreateViewModel();
             article.Tags = _tags.Select(t => new OptionViewModel { Id = t.Id, Name = t.Name, isChecked = false }).ToArray();
 
-            ViewData["Title"] = "Новая статья";
-            ViewData["Header"] = "Добавление статьи";
-            ViewData["Method"] = "Create";
+            ViewSettings(true);
 
             return View(article);
+        }
+
+        private void ViewSettings(bool isCreate)
+        {
+            if (isCreate)
+            {
+                ViewData["Title"] = "Новая статья";
+                ViewData["Header"] = "Добавление статьи";
+                ViewData["Method"] = "Create";
+            }
+            else
+            {
+                ViewData["Title"] = "Редактирование статьи";
+                ViewData["Header"] = "Редактирование статьи";
+                ViewData["Method"] = "Edit";
+            }
         }
 
         /// <summary>
@@ -195,6 +210,13 @@ namespace SF.LvmBlog.Controllers
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
             var tagRepo = _unitOfWork.GetRepository<Tag>() as TagRepository;
 
+            if (!ModelState.IsValid)
+            {
+                ViewSettings(true);
+                article.Tags = await GetViewTags(tagRepo, article.OptionNames);
+                return View(article);
+            }
+
             var dbArticle = _mapper.Map<Article>(article);
             dbArticle.AuthorId = currentUser.Id;
             dbArticle.Tags = await GetRepoTags(tagRepo, article.OptionNames);
@@ -203,7 +225,12 @@ namespace SF.LvmBlog.Controllers
             return RedirectToAction("Index", "Article");
         }
 
-        // Преобразование списка тегов
+        /// <summary>
+        /// Преобразование списка имен тегов в список Tag для БД
+        /// </summary>
+        /// <param name="repo"></param>
+        /// <param name="tags"></param>
+        /// <returns>Task<List<Tag>></returns>
         private async Task<List<Tag>> GetRepoTags(TagRepository repo, string[] tags)
         {
             var tagList = new List<Tag>();
@@ -217,6 +244,26 @@ namespace SF.LvmBlog.Controllers
                     tagList.Add(dbTag);
             }
             return tagList;
+        }
+
+        /// <summary>
+        /// Преобразование списка имен тегов в список OptionViewModel для представления
+        /// </summary>
+        /// <param name="repo"></param>
+        /// <param name="tags"></param>
+        /// <returns>Task<OptionViewModel[]></returns>
+        private async Task<OptionViewModel[]> GetViewTags(TagRepository repo, string[] tagNames)
+        {
+            var _tags = await repo.GetAll();
+            var tagOptions = _tags.Select(t =>
+            new OptionViewModel
+            {
+                Id = t.Id,
+                Name = t.Name,
+                isChecked = tagNames.Contains(t.Name)
+            }).ToArray();
+
+            return tagOptions;
         }
 
         /// <summary>
@@ -240,22 +287,10 @@ namespace SF.LvmBlog.Controllers
                 return NotFound($"Ошибка: Вы не имеете права редактировать эту статью.");
 
             var article = _mapper.Map<ArticleCreateViewModel>(oldArticle);
-
             var tagRepo = _unitOfWork.GetRepository<Tag>() as TagRepository;
-            var _tags = await tagRepo.GetAll();
 
-            article.Tags = _tags.Select(t =>
-                new OptionViewModel
-                {
-                    Id = t.Id,
-                    Name = t.Name,
-                    isChecked = oldArticle.Tags.Select(t1 => t1.Name).Contains(t.Name)
-                }).ToArray();
-
-            ViewData["Title"] = "Редактирование статьи";
-            ViewData["Header"] = "Редактирование статьи";
-            ViewData["Method"] = "Edit";
-
+            article.Tags = await GetViewTags(tagRepo, oldArticle.Tags.Select(t => t.Name).ToArray());
+            ViewSettings(false);
             return View("Create", article);
         }
 
@@ -267,6 +302,14 @@ namespace SF.LvmBlog.Controllers
         [Authorize]
         public async Task<IActionResult> Edit([FromRoute] int id, [FromForm] ArticleCreateViewModel article)
         {
+            var tagRepo = _unitOfWork.GetRepository<Tag>() as TagRepository;
+            if (!ModelState.IsValid)
+            {
+                ViewSettings(false);
+                article.Tags = await GetViewTags(tagRepo, article.OptionNames);
+                return View("Create", article);
+            }
+
             var currentUser = await HttpContext.GetCurrentUser();
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
             var oldArticle = await articleRepo.GetById(id);
@@ -279,9 +322,7 @@ namespace SF.LvmBlog.Controllers
                 && !currentUser.Roles.Any(r => r.Value == Roles.Admin || r.Value == Roles.Moderator))
                 return NotFound($"Ошибка: Вы не имеете права редактировать эту статью.");
 
-            var tagRepo = _unitOfWork.GetRepository<Tag>() as TagRepository;
             var newArticle = _mapper.Map(article, oldArticle);
-
             newArticle.Tags = await GetRepoTags(tagRepo, article.OptionNames);
 
             await articleRepo.Update(newArticle);

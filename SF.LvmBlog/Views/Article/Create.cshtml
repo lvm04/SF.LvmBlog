@@ -19,8 +19,8 @@
                         <br />
                         <label for="Text" class="form-label">Контент</label>
                         <textarea class="form-control" asp-for="Text" rows="10">@Model?.Text</textarea>
-                        <input class="btn btn-primary mt-3" type="submit" value="Сохранить" />
                         <span asp-validation-for="Text" class="text-danger"> </span>
+                        <input class="btn btn-primary mt-3" type="submit" value="Сохранить" />
                     </div>
                 </form>
             }

@@ -1,4 +1,5 @@
 ﻿using SF.BlogData.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace SF.LvmBlog.ViewModels;
 
@@ -12,4 +13,6 @@ public class ArticleViewModel
     public int NumberViews { get; set; }
     public List<Tag> Tags { get; set; } = new();
     public List<Comment> Comments { get; set; } = new();
+    [Required(ErrorMessage = "Напишите текст")]
+    public string CommentText { get; set; }
 }

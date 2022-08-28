@@ -23,8 +23,10 @@ public class MappingProfile : Profile
         CreateMap<Article, ArticleCreateViewModel>()
             .ForMember(dest => dest.Tags, opt => opt.Ignore());
 
-        CreateMap<CommentCreateViewModel, Comment>();
-        CreateMap<Comment, CommentCreateViewModel>();
+        CreateMap<CommentCreateViewModel, Comment>()
+            .ForMember(dest => dest.Text, opt => opt.MapFrom(src => src.CommentText));
+        CreateMap<Comment, CommentCreateViewModel>()
+            .ForMember(dest => dest.CommentText, opt => opt.MapFrom(src => src.Text)); ;
 
         CreateMap<User, UserCreateViewModel>()
             .ForMember(dest => dest.Roles, opt => opt.Ignore());

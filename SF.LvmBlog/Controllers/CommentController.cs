@@ -12,6 +12,7 @@ using SF.BlogData;
 using SF.BlogData.Models;
 using SF.BlogData.Repository;
 using Microsoft.AspNetCore.Authorization;
+using System.Data;
 
 namespace SF.LvmBlog.Controllers
 {
@@ -39,12 +40,17 @@ namespace SF.LvmBlog.Controllers
         /// </summary>
         [HttpPost]
         [Authorize]
+        [Route("{action}")]
         public async Task<IActionResult> Add([FromForm] CommentCreateViewModel comment)
         {
-            var currentUser = await HttpContext.GetCurrentUser();
-            var commentRepo = _unitOfWork.GetRepository<Comment>() as CommentRepository;
-            var newComment = new Comment { AuthorId = currentUser.Id, ArticleId = comment.ArticleId, Text = comment.Text };
-            await commentRepo.Create(newComment);
+            if (ModelState.IsValid)
+            {
+                var currentUser = await HttpContext.GetCurrentUser();
+                var commentRepo = _unitOfWork.GetRepository<Comment>() as CommentRepository;
+                var newComment = _mapper.Map<Comment>(comment);
+                newComment.AuthorId = currentUser.Id;
+                await commentRepo.Create(newComment);
+            }
 
             return RedirectToAction("GetById", "Article", new { id = comment.ArticleId });
         }
@@ -78,6 +84,11 @@ namespace SF.LvmBlog.Controllers
         [Authorize]
         public async Task<IActionResult> Edit([FromForm] CommentCreateViewModel comment)
         {
+            if (!ModelState.IsValid)
+            {
+                return View(comment);
+            }
+
             var currentUser = await HttpContext.GetCurrentUser();
             var commentRepo = _unitOfWork.GetRepository<Comment>() as CommentRepository;
             var oldComment = await commentRepo.GetById(comment.Id);

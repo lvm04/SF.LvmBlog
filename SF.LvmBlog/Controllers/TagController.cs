@@ -12,6 +12,7 @@ using SF.BlogData;
 using SF.BlogData.Models;
 using SF.BlogData.Repository;
 using Microsoft.AspNetCore.Authorization;
+using System.Data;
 
 namespace SF.LvmBlog.Controllers
 {
@@ -47,11 +48,25 @@ namespace SF.LvmBlog.Controllers
         [Route("New")]
         public IActionResult Create()
         {
-            ViewData["Title"] = "Тег";
-            ViewData["Header"] = "Новый тег";
-            ViewData["Method"] = "Create";
-         
+            ViewSettings(true);
+
             return View(new TagViewModel());
+        }
+
+        private void ViewSettings(bool isCreate)
+        {
+            if (isCreate)
+            {
+                ViewData["Title"] = "Тег";
+                ViewData["Header"] = "Новый тег";
+                ViewData["Method"] = "Create";
+            }
+            else
+            {
+                ViewData["Title"] = "Тег";
+                ViewData["Header"] = "Редактирование тега";
+                ViewData["Method"] = "Edit";
+            }
         }
 
         /// <summary>
@@ -62,6 +77,12 @@ namespace SF.LvmBlog.Controllers
         [Route("Create")]
         public async Task<IActionResult> Create([FromForm] TagViewModel tag)
         {
+            if (!ModelState.IsValid)
+            {
+                ViewSettings(true);
+                return View("Create", tag);
+            }
+
             var tagRepo = _unitOfWork.GetRepository<Tag>() as TagRepository;
             var newTag = _mapper.Map<Tag>(tag);
             await tagRepo.Create(newTag);
@@ -84,9 +105,7 @@ namespace SF.LvmBlog.Controllers
             }
 
             var tag = _mapper.Map<TagViewModel>(dbTag);
-            ViewData["Title"] = "Тег";
-            ViewData["Header"] = "Редактирование тега";
-            ViewData["Method"] = "Edit";
+            ViewSettings(false);
 
             return View("Create", tag);
         }
@@ -99,6 +118,12 @@ namespace SF.LvmBlog.Controllers
         [Route("{action}")]
         public async Task<IActionResult> Edit([FromForm] TagViewModel tag)
         {
+            if (!ModelState.IsValid)
+            {
+                ViewSettings(false);
+                return View("Create", tag);
+            }
+
             var tagRepo = _unitOfWork.GetRepository<Tag>() as TagRepository;
             var oldTag = await tagRepo.Get(tag.Id);
             if (oldTag == null)

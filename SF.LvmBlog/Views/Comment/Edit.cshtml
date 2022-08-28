@@ -1,7 +1,7 @@
 ﻿@model CommentCreateViewModel
 
 @{
-    ViewData["Title"] = "Комментарий";
+    ViewData["Title"] = "Редактирование комментария";
 }
 
 <div class="container">
@@ -12,10 +12,14 @@
             @if (User.Identity.IsAuthenticated)
             {
                 <form asp-action="Edit" asp-controller="Comment" asp-route-id="" method="post">
+                    <div class="validation text-danger" asp-validation-summary="ModelOnly"></div>
                     <div class="mb-3">
                         <input type="hidden" name="Id" value="@Model.Id" />
                         <input type="hidden" name="ArticleId" value="@Model.ArticleId" />
-                        <textarea class="form-control" name="Text" rows="3">@Model.Text</textarea>
+
+                        <label for="Text" class="form-label">Текст</label>
+                        <textarea class="form-control" asp-for="CommentText" rows="3">@Model.CommentText</textarea>
+                        <span asp-validation-for="CommentText" class="text-danger"> </span>
                         <input class="btn btn-primary mt-3" type="submit" value="Сохранить" />
                     </div>
                 </form>
@@ -23,3 +27,7 @@
         </div>
     </div>
 </div>
+
+@section ValidationScripts {
+    <partial name="_ValidationScriptsPartial" />
+}
