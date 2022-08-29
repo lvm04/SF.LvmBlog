@@ -1,0 +1,12 @@
+﻿@model string
+@inject ILogger<Controller> _logger
+
+@{
+    _logger.LogError($"[{User.Identity.Name}] {Model}");
+    ViewData["Title"] = "Ошибка";
+}
+
+
+<h5 class="text-danger">@Model</h5>
+
+

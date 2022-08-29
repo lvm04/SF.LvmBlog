@@ -20,21 +20,24 @@ namespace SF.LvmBlog.Controllers
     public class ArticleController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<HomeController> _logger;
         private IMapper _mapper, _mapperMod;
         const int PAGE_SIZE = 5;
 
-        public ArticleController(IUnitOfWork unitOfWork, IMapper mapper)
+        public ArticleController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<HomeController> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
 
             // Модификация маппера для обрезания текста статьи
-            var configuration = new MapperConfiguration(cfg => {
+            var configuration = new MapperConfiguration(cfg =>
+            {
                 cfg.CreateMap<Article, ArticleViewModel>()
                     .ForMember(dest => dest.Text, opt => opt.MapFrom(src =>
                         src.Text.Length > 100 ? src.Text.Substring(0, 100) : src.Text.Substring(0, src.Text.Length)));
             });
             _mapperMod = configuration.CreateMapper();
+            _logger = logger;
         }
 
         /// <summary>
@@ -45,6 +48,8 @@ namespace SF.LvmBlog.Controllers
         public async Task<IActionResult> Index(int page = 1, SortState sortOrder = SortState.Id, bool up = true, 
                                                 string searchText = "", string tagName = "")
         {
+            //int a = 1, b = 0; int c = a / b;      // исключение
+
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
             IQueryable<Article> _articles = articleRepo.Set.Include(a => a.Author).Include(a => a.Tags).AsNoTracking();
 
@@ -79,6 +84,8 @@ namespace SF.LvmBlog.Controllers
                 TagName = tagName
             };
 
+            _logger.LogInformation($"[{HttpContext.User.Identity.Name}] запросил список статей");
+
             ViewData["SearchText"] = searchText;
             ViewData["TagName"] = tagName;
             ViewData["Header"] = "Статьи";
@@ -97,13 +104,14 @@ namespace SF.LvmBlog.Controllers
             var _article = await articleRepo.GetById(id);
             if (_article == null)
             {
-                return NotFound($"Ошибка: Статья с идентификатором {id} не существует.");
+                return View("UserError", $"Ошибка: Статья с идентификатором {id} не существует.");
             }
             var article = _mapper.Map<ArticleViewModel>(_article);
 
             _article.NumberViews++;
             await articleRepo.Update(_article);
 
+            _logger.LogInformation($"[{HttpContext.User.Identity.Name}] запросил статью ID={id}");
             return View(article);
         }
 
@@ -179,6 +187,7 @@ namespace SF.LvmBlog.Controllers
 
             ViewSettings(true);
 
+            _logger.LogInformation($"[{HttpContext.User.Identity.Name}] запросил форму создания статьи");
             return View(article);
         }
 
@@ -222,6 +231,7 @@ namespace SF.LvmBlog.Controllers
             dbArticle.Tags = await GetRepoTags(tagRepo, article.OptionNames);
 
             await articleRepo.Create(dbArticle);
+            _logger.LogInformation($"[{HttpContext.User.Identity.Name}] написал статью с Id={dbArticle.Id}");
             return RedirectToAction("Index", "Article");
         }
 
@@ -279,18 +289,19 @@ namespace SF.LvmBlog.Controllers
             var oldArticle = await articleRepo.GetById(id);
             if (oldArticle == null)
             {
-                return NotFound($"Ошибка: Статья с идентификатором {id} не существует.");
+                return View("UserError", $"Ошибка: Статья с идентификатором {id} не существует.");
             }
 
             if (oldArticle.AuthorId != currentUser.Id
                  && !currentUser.Roles.Any(r => r.Value == Roles.Admin || r.Value == Roles.Moderator))
-                return NotFound($"Ошибка: Вы не имеете права редактировать эту статью.");
+                return View("UserError", $"Ошибка: Вы не имеете права редактировать эту статью.");
 
             var article = _mapper.Map<ArticleCreateViewModel>(oldArticle);
             var tagRepo = _unitOfWork.GetRepository<Tag>() as TagRepository;
 
             article.Tags = await GetViewTags(tagRepo, oldArticle.Tags.Select(t => t.Name).ToArray());
             ViewSettings(false);
+            _logger.LogInformation($"[{HttpContext.User.Identity.Name}] запросил для редактированя статью с Id={id}");
             return View("Create", article);
         }
 
@@ -315,17 +326,18 @@ namespace SF.LvmBlog.Controllers
             var oldArticle = await articleRepo.GetById(id);
             if (oldArticle == null)
             {
-                return NotFound($"Ошибка: Статья с идентификатором {id} не существует.");
+                return View("UserError", $"Ошибка: Статья с идентификатором {id} не существует.");
             }
 
             if (oldArticle.AuthorId != currentUser.Id
                 && !currentUser.Roles.Any(r => r.Value == Roles.Admin || r.Value == Roles.Moderator))
-                return NotFound($"Ошибка: Вы не имеете права редактировать эту статью.");
+                return View("UserError", $"Ошибка: Вы не имеете права редактировать эту статью.");
 
             var newArticle = _mapper.Map(article, oldArticle);
             newArticle.Tags = await GetRepoTags(tagRepo, article.OptionNames);
 
             await articleRepo.Update(newArticle);
+            _logger.LogInformation($"[{HttpContext.User.Identity.Name}] отредактировал статью с Id={id}");
             return RedirectToAction("Index", "Article");
         }
 
@@ -340,10 +352,10 @@ namespace SF.LvmBlog.Controllers
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
             var article = await articleRepo.Get(id);
             if (article == null)
-                return NotFound($"Ошибка: Статья с идентификатором {id} не существует.");
+                return View("UserError", $"Ошибка: Статья с идентификатором {id} не существует.");
 
             await articleRepo.Delete(article);
-
+            _logger.LogInformation($"[{HttpContext.User.Identity.Name}] удалил статью с Id={id}");
             return RedirectToAction("Index", "Article");
         }
 

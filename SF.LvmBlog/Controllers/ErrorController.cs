@@ -4,24 +4,38 @@ namespace SF.LvmBlog.Controllers
 {
     public class ErrorController : Controller
     {
+        private readonly ILogger<HomeController> _logger;
+        public ErrorController(ILogger<HomeController> logger)
+        {
+            _logger = logger;
+        }
+
         [Route("/Error/{statusCode}")]
         public IActionResult HttpStatusCodeHandler(int statusCode)
         {
+            ViewBag.StatusCode = statusCode;
             switch (statusCode)
             {
-                case 404:
-                    ViewBag.StatusCode = 404;
-                    ViewBag.ErrorMessage = "Ресурс не найден";
+                case 400:
+                    ViewBag.ErrorMessage = "Плохой запрос.";
+                    break;
+                case 401:
+                    ViewBag.ErrorMessage = "Неавторизованно.";
                     break;
                 case 403:
-                    ViewBag.StatusCode = 403;
-                    ViewBag.ErrorMessage = "Доступ запрещен";
+                    ViewBag.ErrorMessage = "Доступ запрещен.";
+                    break;
+                case 404:
+                    ViewBag.ErrorMessage = "Ресурс не найден.";
+                    break;
+                case 405:
+                    ViewBag.ErrorMessage = "Метод не разрешён";
                     break;
                 default:
-                    ViewBag.StatusCode = statusCode;
-                    ViewBag.ErrorMessage = "Неизвестная ошибка";
+                    ViewBag.ErrorMessage = "Неизвестная ошибка HTTP";
                     break ;
             }
+            _logger.LogError($"[{HttpContext.User.Identity.Name}] {ViewBag.StatusCode} - {ViewBag.ErrorMessage}");
             return View("~/Views/Shared/HttpError.cshtml");
         }
     }
