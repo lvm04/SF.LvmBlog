@@ -6,7 +6,7 @@
 * В файле Program.cs включена обработка ошибок HTTP:
 ![Http Error](img/HttpError.PNG)
 
- и исключений:
+и исключений:
 ![Exception](img/Exception.png)
 
 Ошибки пользователя отображаются отдельным представлением:
