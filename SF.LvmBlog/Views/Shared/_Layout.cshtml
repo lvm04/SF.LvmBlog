@@ -33,7 +33,7 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Role" asp-action="Index">Роли</a>
                         </li>
                     </ul>
-                    <form class="d-flex" name="search" method="get">
+                    <form class="d-flex" name="search" method="get" style="display: none!important;">
                         <input type="hidden" name="tagName" value="@ViewData["TagName"]">
                         <input class="form-control me-2" type="search" placeholder="Поиск" name="searchText" value="@ViewData["SearchText"]">
                         <button class="me-4" type="submit" title="Поиск" style="border-width: 0; background-color: inherit;" >

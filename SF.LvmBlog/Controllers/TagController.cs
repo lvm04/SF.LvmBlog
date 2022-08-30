@@ -1,18 +1,10 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
 using AutoMapper;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using SF.LvmBlog.ViewModels;
-using System.Web;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SF.BlogData;
 using SF.BlogData.Models;
 using SF.BlogData.Repository;
-using Microsoft.AspNetCore.Authorization;
-using System.Data;
+using SF.LvmBlog.ViewModels;
 
 namespace SF.LvmBlog.Controllers
 {
@@ -21,11 +13,13 @@ namespace SF.LvmBlog.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private IMapper _mapper;
+        private readonly ILogger<TagController> _logger;
 
-        public TagController(IUnitOfWork unitOfWork, IMapper mapper)
+        public TagController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<TagController> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -36,7 +30,7 @@ namespace SF.LvmBlog.Controllers
 
             var _tags = await tagRepo.GetAll();
             var tags = _mapper.Map<IEnumerable<Tag>, IEnumerable<TagViewModel>>(_tags);
-
+            _logger.LogInformation($"[{HttpContext.User.Identity.Name}] запросил список тегов");
             return View(tags);
         }
 
@@ -49,7 +43,7 @@ namespace SF.LvmBlog.Controllers
         public IActionResult Create()
         {
             ViewSettings(true);
-
+            _logger.LogInformation($"[{HttpContext.User.Identity.Name}] запросил форму создания тега");
             return View(new TagViewModel());
         }
 
@@ -86,6 +80,7 @@ namespace SF.LvmBlog.Controllers
             var tagRepo = _unitOfWork.GetRepository<Tag>() as TagRepository;
             var newTag = _mapper.Map<Tag>(tag);
             await tagRepo.Create(newTag);
+            _logger.LogInformation($"[{HttpContext.User.Identity.Name}] создал новый тег с Id={newTag.Id}");
             return RedirectToAction("Index");
         }
 
@@ -101,12 +96,12 @@ namespace SF.LvmBlog.Controllers
             var dbTag = await tagRepo.Get(id);
             if (dbTag == null)
             {
-                return NotFound($"Ошибка: Тег с идентификатором {id} не существует.");
+                return View("UserError", $"Ошибка: Тег с идентификатором {id} не существует.");
             }
 
             var tag = _mapper.Map<TagViewModel>(dbTag);
             ViewSettings(false);
-
+            _logger.LogInformation($"[{HttpContext.User.Identity.Name}] запросил для редактирования тег с Id={id}");
             return View("Create", tag);
         }
 
@@ -128,12 +123,12 @@ namespace SF.LvmBlog.Controllers
             var oldTag = await tagRepo.Get(tag.Id);
             if (oldTag == null)
             {
-                return NotFound($"Ошибка: Тег с идентификатором {tag?.Id} не существует.");
+                return View("UserError", $"Ошибка: Тег с идентификатором {tag.Id} не существует.");
             }
 
             var newTag = _mapper.Map(tag, oldTag);
-
             await tagRepo.Update(newTag);
+            _logger.LogInformation($"[{HttpContext.User.Identity.Name}] отредактировал тег с Id={newTag.Id}");
             return RedirectToAction("Index");
         }
 
@@ -150,10 +145,11 @@ namespace SF.LvmBlog.Controllers
             var tag = await tagRepo.Get(id);
             if (tag == null)
             {
-                return NotFound($"Ошибка: Тег с идентификатором {id} не существует.");
+                return View("UserError", $"Ошибка: Тег с идентификатором {id} не существует.");
             }
 
             await tagRepo.Delete(tag);
+            _logger.LogInformation($"[{HttpContext.User.Identity.Name}] удалил тег с Id={id}");
             return RedirectToAction("Index");
         }
     }

@@ -2,12 +2,16 @@
 
 * Во все модели добавлены проверки на наличие некорректных данных
 ![Model Validation](img/ModelValidation.PNG)
+
 * В файле Program.cs включена обработка ошибок HTTP:
 ![Http Error](img/HttpError.PNG)
+
  и исключений:
 ![Exception](img/Exception.png)
+
 Ошибки пользователя отображаются отдельным представлением:
 ![User Error](img/UserError.PNG)
+
 * Настроено логирование через библиотеку NLog:
 ![Logger](img/Logger.PNG)
 

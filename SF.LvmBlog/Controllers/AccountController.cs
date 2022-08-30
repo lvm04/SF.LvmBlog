@@ -1,16 +1,14 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using SF.LvmBlog.ViewModels;
-using System.Web;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SF.BlogData;
 using SF.BlogData.Models;
 using SF.BlogData.Repository;
+using SF.LvmBlog.ViewModels;
+using System.Security.Claims;
+using System.Web;
 
 namespace SF.LvmBlog.Controllers
 {
@@ -18,11 +16,13 @@ namespace SF.LvmBlog.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private IMapper _mapper;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(IUnitOfWork unitOfWork, IMapper mapper)
+        public AccountController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<AccountController> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -41,7 +41,7 @@ namespace SF.LvmBlog.Controllers
             if (ModelState.IsValid)
             {
                 var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;
-                var _user = await userRepo.GetByLogin(user?.Login);
+                var _user = await userRepo.GetByLogin(user.Login);
                 if (_user == null)
                 {
                     var roleRepo = _unitOfWork.GetRepository<Role>(false);
@@ -53,10 +53,14 @@ namespace SF.LvmBlog.Controllers
 
                     await Authenticate(dbUser);             // аутентификация
 
+                    _logger.LogInformation($"[{dbUser.Login}] регистрация нового пользователя с Id={dbUser.Id}");
                     return RedirectToAction("Index", "Home");
                 }
                 else
+                {
+                    _logger.LogError($"[] Пользователь с логином {user.Login} уже существует.");
                     ModelState.AddModelError("", $"Ошибка: Пользователь с таким логином уже существует.");
+                }
             }
             return View(user);
         }
@@ -77,7 +81,8 @@ namespace SF.LvmBlog.Controllers
                 User _user = await userRepo.CheckCredentials(user.Login, user.Password);
                 if (_user != null)
                 {
-                    await Authenticate(_user);       // аутентификация
+                    await Authenticate(_user);
+                    _logger.LogInformation($"[{_user.Login}] успешная аутентификация");
 
                     string returnUrl = GetQueryParam(HttpContext.Request.Headers["Referer"].ToString(), "ReturnUrl");
                     if (!string.IsNullOrEmpty(returnUrl))
@@ -85,6 +90,8 @@ namespace SF.LvmBlog.Controllers
                     else
                         return RedirectToAction("Index", "Home");
                 }
+
+                _logger.LogError($"[] Некорректные логин и(или) пароль");
                 ModelState.AddModelError("", "Некорректные логин и(или) пароль");
             }
             return View(user);
@@ -97,8 +104,10 @@ namespace SF.LvmBlog.Controllers
             return result;
         }
 
+        [Authorize]
         public async Task<IActionResult> Logout()
         {
+            _logger.LogInformation($"[{HttpContext.User.Identity.Name}] вышел из учетной записи");
             await HttpContext.SignOutAsync();
             return RedirectToAction("Index", "Home");
         }

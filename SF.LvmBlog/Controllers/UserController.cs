@@ -1,30 +1,28 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SF.LvmBlog.ViewModels;
 using SF.BlogData;
 using SF.BlogData.Models;
 using SF.BlogData.Repository;
-using System.Security.Claims;
+using SF.LvmBlog.ViewModels;
 
 namespace SF.LvmBlog.Controllers
 {
+    [AuthorizeRoles(Roles.Admin)]
     [Route("{controller}")]
     public class UserController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
         private IMapper _mapper;
+        private readonly ILogger<UserController> _logger;
 
-        public UserController(IUnitOfWork unitOfWork, IMapper mapper)
+        public UserController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<UserController> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _logger = logger;
         }
 
         [HttpGet]
-        [AuthorizeRoles(Roles.Admin)]
         [Route("")]
         public async Task<IActionResult> Index()
         {
@@ -34,11 +32,11 @@ namespace SF.LvmBlog.Controllers
             var users = _mapper.Map<IEnumerable<User>, IEnumerable<UserViewModel>>(_users);
 
             ViewData["Header"] = "Пользователи";
+            _logger.LogInformation($"[{HttpContext.User.Identity.Name}] запросил список пользователей");
             return View(users);
         }
 
         [HttpGet]
-        [AuthorizeRoles(Roles.Admin)]
         [Route("{action}")]
         public async Task<IActionResult> Search([FromQuery] string searchText)
         {
@@ -57,14 +55,14 @@ namespace SF.LvmBlog.Controllers
             }
 
             var users = _mapper.Map<IEnumerable<User>, IEnumerable<UserViewModel>>(_users);
+            _logger.LogInformation($"[{HttpContext.User.Identity.Name}] отфильтровал пользователей");
             return View("Index", users);
         }
 
 
         [HttpGet]
-        [AuthorizeRoles(Roles.Admin)]
         [Route("{id}")]
-        public IActionResult GetById([FromRoute]int id)
+        public IActionResult GetById([FromRoute] int id)
         {
             return View();
         }
@@ -73,14 +71,13 @@ namespace SF.LvmBlog.Controllers
         /// Форма редактирования пользователя
         /// </summary>
         [HttpGet]
-        [AuthorizeRoles(Roles.Admin)]
         [Route("{action}/{id}")]
         public async Task<IActionResult> Edit([FromRoute] int id)
         {
             var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;
             var oldUser = await userRepo.GetById(id);
             if (oldUser == null)
-                return NotFound($"Ошибка: Пользователя с идентификатором {id} не существует.");
+                return View("UserError", $"Ошибка: Пользователя с идентификатором {id} не существует.");
 
             var user = _mapper.Map<UserCreateViewModel>(oldUser);
 
@@ -97,6 +94,7 @@ namespace SF.LvmBlog.Controllers
 
             ViewData["Title"] = "Редактирование пользователя";
             ViewData["Header"] = "Редактирование пользователя";
+            _logger.LogInformation($"[{HttpContext.User.Identity.Name}] запросил для редактирования пользователя с Id={id}");
             return View(user);
         }
 
@@ -104,7 +102,6 @@ namespace SF.LvmBlog.Controllers
         /// Редактирование пользователя
         /// </summary>
         [HttpPost]
-        [AuthorizeRoles(Roles.Admin)]
         [Route("{action}")]
         public async Task<IActionResult> Edit([FromForm] UserCreateViewModel user)
         {
@@ -113,7 +110,7 @@ namespace SF.LvmBlog.Controllers
                 var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;
                 var oldUser = await userRepo.GetById(user.Id);
                 if (oldUser == null)
-                    return NotFound($"Ошибка: Пользователя с идентификатором {user.Id} не существует.");
+                    return View("UserError", $"Ошибка: Пользователя с идентификатором {user.Id} не существует.");
 
                 var roleRepo = _unitOfWork.GetRepository<Role>() as RoleRepository;
 
@@ -121,12 +118,13 @@ namespace SF.LvmBlog.Controllers
                 newUser.Roles = await GetRepoRoles(roleRepo, user.OptionNames);
 
                 await userRepo.Update(newUser);
+                _logger.LogInformation($"[{HttpContext.User.Identity.Name}] отредактировал пользователя с Id={user.Id}");
                 return RedirectToAction("Index", "User");
             }
             return View(user);
 
         }
-        
+
         [HttpGet]
         [AuthorizeRoles(Roles.Admin)]
         [Route("{action}/{id}")]
@@ -135,10 +133,10 @@ namespace SF.LvmBlog.Controllers
             var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;
             var user = await userRepo.Get(id);
             if (user == null)
-                return NotFound($"Ошибка: Пользователя с идентификатором {id} не существует.");
+                return View("UserError", $"Ошибка: Пользователя с идентификатором {id} не существует.");
 
             await userRepo.Delete(user);
-
+            _logger.LogInformation($"[{HttpContext.User.Identity.Name}] удалил пользователя с Id={user.Id}");
             return RedirectToAction("Index", "User");
         }
 

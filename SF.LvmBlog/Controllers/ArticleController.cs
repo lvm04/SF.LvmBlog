@@ -1,16 +1,11 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SF.LvmBlog.ViewModels;
+using Microsoft.EntityFrameworkCore;
 using SF.BlogData;
 using SF.BlogData.Models;
 using SF.BlogData.Repository;
-using System.Security.Claims;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+using SF.LvmBlog.ViewModels;
 using System.Data;
 
 namespace SF.LvmBlog.Controllers
@@ -20,11 +15,11 @@ namespace SF.LvmBlog.Controllers
     public class ArticleController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<HomeController> _logger;
+        private readonly ILogger<ArticleController> _logger;
         private IMapper _mapper, _mapperMod;
         const int PAGE_SIZE = 5;
 
-        public ArticleController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<HomeController> logger)
+        public ArticleController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<ArticleController> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -45,7 +40,7 @@ namespace SF.LvmBlog.Controllers
         /// </summary>
         [HttpGet]
         [Route("")]
-        public async Task<IActionResult> Index(int page = 1, SortState sortOrder = SortState.Id, bool up = true, 
+        public async Task<IActionResult> Index(int page = 1, SortState sortOrder = SortState.Id, bool up = true,
                                                 string searchText = "", string tagName = "")
         {
             //int a = 1, b = 0; int c = a / b;      // исключение
