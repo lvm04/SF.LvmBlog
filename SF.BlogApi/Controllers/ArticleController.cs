@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -7,6 +9,7 @@ using SF.BlogApi.Contracts;
 using SF.BlogData;
 using SF.BlogData.Models;
 using SF.BlogData.Repository;
+using System;
 using System.Security.Claims;
 
 namespace SF.BlogApi.Controllers
@@ -18,11 +21,13 @@ namespace SF.BlogApi.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private IMapper _mapper;
+        private IValidator<CreateArticleRequest> _validator;
 
-        public ArticleController(IUnitOfWork unitOfWork, IMapper mapper)
+        public ArticleController(IUnitOfWork unitOfWork, IMapper mapper, IValidator<CreateArticleRequest> validator)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _validator = validator;
         }
 
         
@@ -68,15 +73,23 @@ namespace SF.BlogApi.Controllers
         [HttpPost]
         [Route("")]
         [Authorize]
-        public async Task<IActionResult> Create(CreateArticleRequest article)
+        public async Task<IActionResult> Create([FromBody] CreateArticleRequest article)
         {
+            var result = await _validator.ValidateAsync(article);
+
+            if (!result.IsValid)
+            {
+                result.AddToModelState(this.ModelState);
+                return StatusCode(400, Results.ValidationProblem(result.ToDictionary()));
+            }
+
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
             var dbArticle = _mapper.Map<Article>(article);
             var currentUser = await HttpContext.GetCurrentUser();
             dbArticle.AuthorId = currentUser.Id;
             await articleRepo.Create(dbArticle);
 
-            return StatusCode(200, _mapper.Map<ArticleView>(dbArticle));
+            return StatusCode(200, $"Статья \"{dbArticle.Title}\" добавлена с ID {dbArticle.Id}");
         }
 
         /// <summary>

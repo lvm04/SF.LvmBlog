@@ -1,9 +1,12 @@
 using AutoMapper;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.OpenApi.Models;
 using SF.BlogApi;
+using SF.BlogApi.Contracts.Validation;
 using SF.BlogData;
 using SF.BlogData.Models;
 using SF.BlogData.Repository;
@@ -27,6 +30,9 @@ builder.Services.AddScoped<IRepository<Role>, RoleRepository>();
 builder.Services.AddScoped<IRepository<Comment>, CommentRepository>();
 builder.Services.AddScoped<IRepository<Tag>, TagRepository>();
 builder.Services.AddScoped<IRepository<Article>, ArticleRepository>();
+
+// Подключаем валидацию
+builder.Services.AddValidatorsFromAssemblyContaining<CreateArticleRequestValidator>();
 
 var mapperConfig = new MapperConfiguration((v) =>
 {
