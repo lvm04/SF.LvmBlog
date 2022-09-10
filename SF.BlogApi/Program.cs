@@ -49,7 +49,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
                     {
                         context.Response.StatusCode = 401;
                         context.Response.Headers.ContentType = "text/plain; charset=utf-8";
-                        context.Response.WriteAsync("Нет права на выполнение операции"); 
+                        context.Response.WriteAsync("Нет права на выполнение операции");
                         return Task.CompletedTask;
                     };
                 });
@@ -62,6 +62,28 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1",
         Title = "Blog API",
         Description = "Итоговый проект. Разработка блога",
+    });
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Please insert JWT with Bearer into field",
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] { }
+        }
     });
 
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";

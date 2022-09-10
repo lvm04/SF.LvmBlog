@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -7,6 +8,7 @@ using SF.BlogApi.Contracts;
 using SF.BlogData;
 using SF.BlogData.Models;
 using SF.BlogData.Repository;
+using System.Data;
 using System.Security.Claims;
 
 namespace SF.BlogApi.Controllers
@@ -16,12 +18,14 @@ namespace SF.BlogApi.Controllers
     public class TagController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
-        private IMapper _mapper;
+        private readonly IMapper _mapper;
+        private readonly IValidator<CreateTagRequest> _validator;
 
-        public TagController(IUnitOfWork unitOfWork, IMapper mapper)
+        public TagController(IUnitOfWork unitOfWork, IMapper mapper, IValidator<CreateTagRequest> validator)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _validator = validator;
         }
 
 
@@ -62,44 +66,56 @@ namespace SF.BlogApi.Controllers
         /// Создание тега
         /// </summary>
         [HttpPost]
-        [Route("")]
+        [Route("Add")]
         [Authorize]
-        public async Task<IActionResult> Create(string tagName)
+        public async Task<IActionResult> Create(CreateTagRequest tag)
         {
-            var tagRepo = _unitOfWork.GetRepository<Tag>() as TagRepository;
-            var tag = await tagRepo.GetByName(tagName);
+            var validateResult = await _validator.ValidateAsync(tag);
+            if (!validateResult.IsValid)
+            {
+                return StatusCode(400, Results.ValidationProblem(validateResult.ToDictionary()));
+            }
 
-            if (tag != null)
+            var tagRepo = _unitOfWork.GetRepository<Tag>() as TagRepository;
+            var _tag = await tagRepo.GetByName(tag.Name);
+
+            if (_tag != null)
                 return StatusCode(400, $"Ошибка: Тег с таким названием уже существует.");
 
-            await tagRepo.Create(new Tag { Name = tagName });
+            await tagRepo.Create(new Tag { Name = tag.Name });
 
-            return StatusCode(200, $"Тег \"{tagName}\" создан");
+            return StatusCode(200, $"Тег \"{tag.Name}\" создан");
         }
 
         /// <summary>
         /// Редактирование тега
         /// </summary>
         [HttpPut]
-        [Route("{id}")]
+        [Route("[action]/{id}")]
         [Authorize(Roles = "Администратор")]
-        public async Task<IActionResult> Edit([FromRoute]int id, [FromBody]string tagName)
+        public async Task<IActionResult> Edit([FromRoute]int id, [FromBody] CreateTagRequest tag)
         {
+            var validateResult = await _validator.ValidateAsync(tag);
+            if (!validateResult.IsValid)
+            {
+                return StatusCode(400, Results.ValidationProblem(validateResult.ToDictionary()));
+            }
+
             var tagRepo = _unitOfWork.GetRepository<Tag>() as TagRepository;
-            var tag = await tagRepo.Get(id);
-            if (tag == null)
+            var _tag = await tagRepo.Get(id);
+            if (_tag == null)
                 return StatusCode(400, $"Ошибка: Тег с идентификатором {id} не существует.");
 
-            tag.Name = tagName;
-            await tagRepo.Update(tag);
-            return StatusCode(200, tag);
+            _tag.Name = tag.Name;
+            await tagRepo.Update(_tag);
+            return StatusCode(200, _tag);
         }
 
         /// <summary>
         /// Удаление тега
         /// </summary>
         [HttpDelete]
-        [Route("{id}")]
+        [Route("[action]/{id}")]
         [Authorize(Roles = "Администратор")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {

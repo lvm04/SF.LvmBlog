@@ -8,7 +8,7 @@ using SF.LvmBlog.ViewModels;
 namespace SF.LvmBlog.Controllers
 {
     [AuthorizeRoles(Roles.Admin)]
-    [Route("{controller}")]
+    [Route("[controller]")]
     public class UserController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -37,7 +37,7 @@ namespace SF.LvmBlog.Controllers
         }
 
         [HttpGet]
-        [Route("{action}")]
+        [Route("[action]")]
         public async Task<IActionResult> Search([FromQuery] string searchText)
         {
             var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;
@@ -71,7 +71,7 @@ namespace SF.LvmBlog.Controllers
         /// Форма редактирования пользователя
         /// </summary>
         [HttpGet]
-        [Route("{action}/{id}")]
+        [Route("[action]/{id}")]
         public async Task<IActionResult> Edit([FromRoute] int id)
         {
             var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;
@@ -102,7 +102,7 @@ namespace SF.LvmBlog.Controllers
         /// Редактирование пользователя
         /// </summary>
         [HttpPost]
-        [Route("{action}")]
+        [Route("[action]")]
         public async Task<IActionResult> Edit([FromForm] UserCreateViewModel user)
         {
             if (ModelState.IsValid)
@@ -127,7 +127,7 @@ namespace SF.LvmBlog.Controllers
 
         [HttpGet]
         [AuthorizeRoles(Roles.Admin)]
-        [Route("{action}/{id}")]
+        [Route("[action]/{id}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;

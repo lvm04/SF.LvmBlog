@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -17,12 +18,14 @@ namespace SF.BlogApi.Controllers
     public class RoleController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
-        private IMapper _mapper;
+        private readonly IMapper _mapper;
+        private readonly IValidator<CreateRoleRequest> _validator;
 
-        public RoleController(IUnitOfWork unitOfWork, IMapper mapper)
+        public RoleController(IUnitOfWork unitOfWork, IMapper mapper, IValidator<CreateRoleRequest> validator)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _validator = validator;
         }
 
 
@@ -63,10 +66,16 @@ namespace SF.BlogApi.Controllers
         /// Создание роли
         /// </summary>
         [HttpPost]
-        [Route("")]
+        [Route("Add")]
         [Authorize(Roles = "Администратор")]
         public async Task<IActionResult> Create(CreateRoleRequest role)
         {
+            var validateResult = await _validator.ValidateAsync(role);
+            if (!validateResult.IsValid)
+            {
+                return StatusCode(400, Results.ValidationProblem(validateResult.ToDictionary()));
+            }
+
             var roleRepo = _unitOfWork.GetRepository<Role>() as RoleRepository;
             var _role = await roleRepo.GetByName(role?.Name);
 
@@ -82,10 +91,16 @@ namespace SF.BlogApi.Controllers
         /// Редактирование роли
         /// </summary>
         [HttpPut]
-        [Route("{id}")]
+        [Route("[action]/{id}")]
         [Authorize(Roles = "Администратор")]
         public async Task<IActionResult> Edit([FromRoute]int id, [FromBody]CreateRoleRequest role)
         {
+            var validateResult = await _validator.ValidateAsync(role);
+            if (!validateResult.IsValid)
+            {
+                return StatusCode(400, Results.ValidationProblem(validateResult.ToDictionary()));
+            }
+
             var roleRepo = _unitOfWork.GetRepository<Role>() as RoleRepository;
             var _role = await roleRepo.Get(id);
             if (_role == null)
@@ -101,7 +116,7 @@ namespace SF.BlogApi.Controllers
         /// Удаление роли
         /// </summary>
         [HttpDelete]
-        [Route("{id}")]
+        [Route("[action]/{id}")]
         [Authorize(Roles = "Администратор")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {

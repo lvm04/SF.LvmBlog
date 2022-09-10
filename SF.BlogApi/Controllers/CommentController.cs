@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -19,12 +20,14 @@ namespace SF.BlogApi.Controllers
     public class CommentController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
-        private IMapper _mapper;
+        private readonly IMapper _mapper;
+        private readonly IValidator<EditCommentRequest> _validator;
 
-        public CommentController(IUnitOfWork unitOfWork, IMapper mapper)
+        public CommentController(IUnitOfWork unitOfWork, IMapper mapper, IValidator<EditCommentRequest> validator)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _validator = validator;
         }
 
         /// <summary>
@@ -68,10 +71,16 @@ namespace SF.BlogApi.Controllers
         /// Создание комментария
         /// </summary>
         [HttpPost]
-        [Route("")]
+        [Route("Add")]
         [Authorize]
         public async Task<IActionResult> Create(CreateCommentRequest comment)
         {
+            var validateResult = await _validator.ValidateAsync(comment);
+            if (!validateResult.IsValid)
+            {
+                return StatusCode(400, Results.ValidationProblem(validateResult.ToDictionary()));
+            }
+
             var commentRepo = _unitOfWork.GetRepository<Comment>() as CommentRepository;
             var dbComment = _mapper.Map<Comment>(comment);
             var currentUser = await HttpContext.GetCurrentUser();
@@ -85,12 +94,17 @@ namespace SF.BlogApi.Controllers
         /// Редактирование комментария
         /// </summary>
         [HttpPut]
-        [Route("{id}")]
+        [Route("[action]/{id}")]
         [Authorize]
         public async Task<IActionResult> Edit([FromRoute]int id, [FromBody]EditCommentRequest comment)
         {
-            var currentUser = await HttpContext.GetCurrentUser();
+            var validateResult = await _validator.ValidateAsync(comment);
+            if (!validateResult.IsValid)
+            {
+                return StatusCode(400, Results.ValidationProblem(validateResult.ToDictionary()));
+            }
 
+            var currentUser = await HttpContext.GetCurrentUser();
             var commentRepo = _unitOfWork.GetRepository<Comment>() as CommentRepository;
             var oldComment = await commentRepo.Get(id);
 
@@ -115,7 +129,7 @@ namespace SF.BlogApi.Controllers
         /// Удаление комментария
         /// </summary>
         [HttpDelete]
-        [Route("{id}")]
+        [Route("[action]/{id}")]
         [Authorize(Roles = "Администратор,Модератор")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {

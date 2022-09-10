@@ -1,27 +1,22 @@
 ﻿using AutoMapper;
 using FluentValidation;
-using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SF.BlogApi.Contracts;
 using SF.BlogData;
 using SF.BlogData.Models;
 using SF.BlogData.Repository;
-using System;
-using System.Security.Claims;
 
 namespace SF.BlogApi.Controllers
 {
-    
+
     [ApiController]
     [Route("[controller]")]
     public class ArticleController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
-        private IMapper _mapper;
-        private IValidator<CreateArticleRequest> _validator;
+        private readonly IMapper _mapper;
+        private readonly IValidator<CreateArticleRequest> _validator;
 
         public ArticleController(IUnitOfWork unitOfWork, IMapper mapper, IValidator<CreateArticleRequest> validator)
         {
@@ -30,21 +25,21 @@ namespace SF.BlogApi.Controllers
             _validator = validator;
         }
 
-        
+
         /// <summary>
         /// Получить статью по ID
         /// </summary>
         [HttpGet]
         [Route("{id}")]
-        public async Task<IActionResult> GetById([FromRoute]int id)
+        public async Task<IActionResult> GetById([FromRoute] int id)
         {
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
             var _article = await articleRepo.GetById(id);
             if (_article == null)
                 return StatusCode(400, $"Ошибка: Статья с идентификатором {id} не существует.");
             var article = _mapper.Map<ArticleView>(_article);
-            
-            return StatusCode(200, article);   
+
+            return StatusCode(200, article);
         }
 
         /// <summary>
@@ -71,16 +66,14 @@ namespace SF.BlogApi.Controllers
         /// Создание статьи
         /// </summary>
         [HttpPost]
-        [Route("")]
+        [Route("Add")]
         [Authorize]
         public async Task<IActionResult> Create([FromBody] CreateArticleRequest article)
         {
-            var result = await _validator.ValidateAsync(article);
-
-            if (!result.IsValid)
+            var validateResult = await _validator.ValidateAsync(article);
+            if (!validateResult.IsValid)
             {
-                result.AddToModelState(this.ModelState);
-                return StatusCode(400, Results.ValidationProblem(result.ToDictionary()));
+                return StatusCode(400, Results.ValidationProblem(validateResult.ToDictionary()));
             }
 
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
@@ -96,10 +89,16 @@ namespace SF.BlogApi.Controllers
         /// Редактирование статьи
         /// </summary>
         [HttpPut]
-        [Route("{id}")]
+        [Route("[action]/{id}")]
         [Authorize]
-        public async Task<IActionResult> Edit([FromRoute]int id, [FromBody]CreateArticleRequest article)
+        public async Task<IActionResult> Edit([FromRoute] int id, [FromBody] CreateArticleRequest article)
         {
+            var validateResult = await _validator.ValidateAsync(article);
+            if (!validateResult.IsValid)
+            {
+                return StatusCode(400, Results.ValidationProblem(validateResult.ToDictionary()));
+            }
+
             var currentUser = await HttpContext.GetCurrentUser();
 
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
@@ -122,10 +121,48 @@ namespace SF.BlogApi.Controllers
         }
 
         /// <summary>
+        /// Редактирование тегов статьи
+        /// </summary>
+        [HttpPut]
+        [Route("[action]/{id}")]
+        [Authorize]
+        public async Task<IActionResult> EditTags([FromRoute] int id, [FromBody] string[] tags)
+        {
+            var currentUser = await HttpContext.GetCurrentUser();
+            var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
+            var article = await articleRepo.Get(id);
+
+            if (article == null)
+                return StatusCode(400, $"Ошибка: Статья с идентификатором {id} не существует.");
+
+            // Проверяем может ли текущий пользователь редактировать данную статью
+            // Для этого он должен быть автором или принадлежать к группе admin или moderator
+            if (article.AuthorId != currentUser.Id
+                && currentUser.Roles.FirstOrDefault(r => r.Name == "Администратор") == null
+                && currentUser.Roles.FirstOrDefault(r => r.Name == "Модератор") == null)
+                return StatusCode(400, $"Ошибка: Вы не имеете право редактировать эту статью.");
+
+            var tagRepo = _unitOfWork.GetRepository<Tag>() as TagRepository;
+            var _tags = new List<Tag>();
+
+            foreach (var tag in tags)
+            {
+                var dbTag = await tagRepo.GetByName(tag);
+                if (dbTag != null)
+                    _tags.Add(dbTag);
+            }
+
+            article.Tags = _tags;
+            await articleRepo.Update(article);
+
+            return StatusCode(200, _mapper.Map<ArticleView>(article));
+        }
+
+        /// <summary>
         /// Удаление статьи
         /// </summary>
         [HttpDelete]
-        [Route("{id}")]
+        [Route("[action]/{id}")]
         [Authorize(Roles = "Администратор,Модератор")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {

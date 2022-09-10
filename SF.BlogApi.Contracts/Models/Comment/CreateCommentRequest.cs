@@ -1,7 +1,6 @@
 ﻿namespace SF.BlogApi.Contracts;
 
-public class CreateCommentRequest
+public class CreateCommentRequest : EditCommentRequest
 {
     public int ArticleId { get; set; }
-    public string Text { get; set; }
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -19,12 +20,14 @@ namespace SF.BlogApi.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
-        private IMapper _mapper;
+        private readonly IMapper _mapper;
+        private readonly IValidator<CreateUserRequest> _validator;
 
-        public UserController(IUnitOfWork unitOfWork, IMapper mapper)
+        public UserController(IUnitOfWork unitOfWork, IMapper mapper, IValidator<CreateUserRequest> validator)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _validator = validator;
         }
 
         /// <summary>
@@ -83,9 +86,15 @@ namespace SF.BlogApi.Controllers
         /// Создание пользователя
         /// </summary>
         [HttpPost]
-        [Route("")]
+        [Route("Add")]
         public async Task<IActionResult> Create(CreateUserRequest user)
         {
+            var validateResult = await _validator.ValidateAsync(user);
+            if (!validateResult.IsValid)
+            {
+                return StatusCode(400, Results.ValidationProblem(validateResult.ToDictionary()));
+            }
+
             var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;
             var _user = await userRepo.GetByLogin(user?.Login);
             if (_user != null)
@@ -104,10 +113,16 @@ namespace SF.BlogApi.Controllers
         /// Редактирование пользователя
         /// </summary>
         [HttpPut]
-        [Route("{id}")]
+        [Route("[action]/{id}")]
         [Authorize(Roles = "Администратор")]
         public async Task<IActionResult> Edit([FromRoute]int id, [FromBody]CreateUserRequest user)
         {
+            var validateResult = await _validator.ValidateAsync(user);
+            if (!validateResult.IsValid)
+            {
+                return StatusCode(400, Results.ValidationProblem(validateResult.ToDictionary()));
+            }
+
             var userRepo = _unitOfWork.GetRepository<User>() as UserRepository;
             var oldUser = await userRepo.Get(id);
             if (oldUser == null)
@@ -125,7 +140,7 @@ namespace SF.BlogApi.Controllers
         /// Удаление пользователя
         /// </summary>
         [HttpDelete]
-        [Route("{id}")]
+        [Route("[action]/{id}")]
         [Authorize(Roles = "Администратор")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
@@ -155,7 +170,7 @@ namespace SF.BlogApi.Controllers
 
             if (!String.IsNullOrEmpty(request.Password) && request.Password == user.Password)
             {
-                await Authenticate(user);
+                await CookieAuthenticate(user);
                 return StatusCode(200, $"Вы успешно вошли на сайт");
             }
             else
@@ -165,21 +180,20 @@ namespace SF.BlogApi.Controllers
 
         }
 
-        private async Task Authenticate(User user)
+        private async Task CookieAuthenticate(User user)
         {
             var claims = new List<Claim>
             {
                 new Claim(ClaimsIdentity.DefaultNameClaimType, user.Login),
             };
+
             foreach (var role in user.Roles)
             {
                 claims.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, role.Name));
             }
 
-            // создаем объект ClaimsIdentity
             ClaimsIdentity id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType,
                 ClaimsIdentity.DefaultRoleClaimType);
-            // установка аутентификационных куки
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
         }
     }

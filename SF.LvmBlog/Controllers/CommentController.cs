@@ -8,7 +8,7 @@ using SF.LvmBlog.ViewModels;
 
 namespace SF.LvmBlog.Controllers
 {
-    [Route("{controller}")]
+    [Route("[controller]")]
     public class CommentController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -34,7 +34,7 @@ namespace SF.LvmBlog.Controllers
         /// </summary>
         [HttpPost]
         [Authorize]
-        [Route("{action}")]
+        [Route("[action]")]
         public async Task<IActionResult> Add([FromForm] CommentCreateViewModel comment)
         {
             if (ModelState.IsValid)
@@ -55,7 +55,7 @@ namespace SF.LvmBlog.Controllers
         /// </summary>
         [HttpGet]
         [Authorize]
-        [Route("{action}/{id}")]
+        [Route("[action]/{id}")]
         public async Task<IActionResult> Edit(int id)
         {
             var currentUser = await HttpContext.GetCurrentUser();
@@ -76,7 +76,7 @@ namespace SF.LvmBlog.Controllers
         /// Редактирование комментария
         /// </summary>
         [HttpPost]
-        [Route("{action}")]
+        [Route("[action]")]
         [Authorize]
         public async Task<IActionResult> Edit([FromForm] CommentCreateViewModel comment)
         {
@@ -108,7 +108,7 @@ namespace SF.LvmBlog.Controllers
         /// Удалить комментарий
         /// </summary>
         [HttpGet]
-        [Route("{action}/{id}")]
+        [Route("[action]/{id}")]
         [Authorize]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {

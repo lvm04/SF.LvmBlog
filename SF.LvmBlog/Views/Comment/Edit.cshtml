@@ -17,7 +17,7 @@
                         <input type="hidden" name="Id" value="@Model.Id" />
                         <input type="hidden" name="ArticleId" value="@Model.ArticleId" />
 
-                        <label for="Text" class="form-label">Текст</label>
+                        <label for="Text" class="form-label">Комментарий</label>
                         <textarea class="form-control" asp-for="CommentText" rows="3">@Model.CommentText</textarea>
                         <span asp-validation-for="CommentText" class="text-danger"> </span>
                         <input class="btn btn-primary mt-3" type="submit" value="Сохранить" />

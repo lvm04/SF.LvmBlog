@@ -11,7 +11,7 @@ using System.Data;
 namespace SF.LvmBlog.Controllers
 {
 
-    [Route("{controller}")]
+    [Route("[controller]")]
     public class ArticleController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -114,7 +114,7 @@ namespace SF.LvmBlog.Controllers
         /// Поиск статей (не исп.)
         /// </summary>
         [HttpGet]
-        [Route("{action}")]
+        [Route("[action]")]
         public async Task<IActionResult> Search([FromQuery] string searchText)
         {
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
@@ -146,7 +146,7 @@ namespace SF.LvmBlog.Controllers
         /// Статьи по тегу (не исп.)
         /// </summary>
         [HttpGet]
-        [Route("{action}")]
+        [Route("[action]")]
         public async Task<IActionResult> GetByTag([FromQuery] string tagName)
         {
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
@@ -276,7 +276,7 @@ namespace SF.LvmBlog.Controllers
         /// </summary>
         [HttpGet]
         [Authorize]
-        [Route("{action}/{id}")]
+        [Route("[action]/{id}")]
         public async Task<IActionResult> Edit([FromRoute] int id)
         {
             var currentUser = await HttpContext.GetCurrentUser();
@@ -304,7 +304,7 @@ namespace SF.LvmBlog.Controllers
         /// Редактирование статьи
         /// </summary>
         [HttpPost]
-        [Route("{action}/{id}")]
+        [Route("[action]/{id}")]
         [Authorize]
         public async Task<IActionResult> Edit([FromRoute] int id, [FromForm] ArticleCreateViewModel article)
         {
@@ -340,7 +340,7 @@ namespace SF.LvmBlog.Controllers
         /// Удаление статьи
         /// </summary>
         [HttpGet]
-        [Route("{action}/{id}")]
+        [Route("[action]/{id}")]
         [AuthorizeRoles(Roles.Admin, Roles.Moderator)]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
@@ -358,7 +358,7 @@ namespace SF.LvmBlog.Controllers
         /// Генерация статей
         /// </summary>
         [HttpGet]
-        [Route("{action}/{amount}")]
+        [Route("[action]/{amount}")]
         public async Task<IActionResult> Generate([FromRoute] int amount)
         {
             var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;

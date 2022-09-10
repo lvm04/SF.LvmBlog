@@ -8,11 +8,11 @@ using SF.LvmBlog.ViewModels;
 
 namespace SF.LvmBlog.Controllers
 {
-    [Route("{controller}")]
+    [Route("[controller]")]
     public class TagController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
-        private IMapper _mapper;
+        private readonly IMapper _mapper;
         private readonly ILogger<TagController> _logger;
 
         public TagController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<TagController> logger)
@@ -89,7 +89,7 @@ namespace SF.LvmBlog.Controllers
         /// </summary>
         [HttpGet]
         [AuthorizeRoles(Roles.Admin, Roles.Moderator)]
-        [Route("{action}/{id}")]
+        [Route("[action]/{id}")]
         public async Task<IActionResult> Edit(int id)
         {
             var tagRepo = _unitOfWork.GetRepository<Tag>() as TagRepository;
@@ -110,7 +110,7 @@ namespace SF.LvmBlog.Controllers
         /// </summary>
         [HttpPost]
         [AuthorizeRoles(Roles.Admin, Roles.Moderator)]
-        [Route("{action}")]
+        [Route("[action]")]
         public async Task<IActionResult> Edit([FromForm] TagViewModel tag)
         {
             if (!ModelState.IsValid)
@@ -136,7 +136,7 @@ namespace SF.LvmBlog.Controllers
         /// Удалить тег
         /// </summary>
         [HttpGet]
-        [Route("{action}/{id}")]
+        [Route("[action]/{id}")]
         [AuthorizeRoles(Roles.Admin, Roles.Moderator)]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {

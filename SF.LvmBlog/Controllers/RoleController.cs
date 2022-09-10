@@ -8,11 +8,11 @@ using SF.LvmBlog.ViewModels;
 namespace SF.LvmBlog.Controllers
 {
     [AuthorizeRoles(Roles.Admin)]
-    [Route("{controller}")]
+    [Route("[controller]")]
     public class RoleController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
-        private IMapper _mapper;
+        private readonly IMapper _mapper;
         private readonly ILogger<RoleController> _logger;
 
         public RoleController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<RoleController> logger)
@@ -86,7 +86,7 @@ namespace SF.LvmBlog.Controllers
         /// Форма редактирования роли
         /// </summary>
         [HttpGet]
-        [Route("{action}/{id}")]
+        [Route("[action]/{id}")]
         public async Task<IActionResult> Edit(int id)
         {
             var roleRepo = _unitOfWork.GetRepository<Role>() as RoleRepository;
@@ -107,7 +107,7 @@ namespace SF.LvmBlog.Controllers
         /// Редактирование роли
         /// </summary>
         [HttpPost]
-        [Route("{action}")]
+        [Route("[action]")]
         public async Task<IActionResult> Edit([FromForm] RoleViewModel role)
         {
             if (!ModelState.IsValid)
@@ -134,7 +134,7 @@ namespace SF.LvmBlog.Controllers
         /// Удалить роль
         /// </summary>
         [HttpGet]
-        [Route("{action}/{id}")]
+        [Route("[action]/{id}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             var roleRepo = _unitOfWork.GetRepository<Role>() as RoleRepository;
