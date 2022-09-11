@@ -14,7 +14,4 @@ public static class UserExtentions
         return await userRepo.GetByLogin(currentUserLogin);
 
     }
-
-   
-
 }

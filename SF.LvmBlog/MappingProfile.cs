@@ -28,6 +28,7 @@ public class MappingProfile : Profile
         CreateMap<Comment, CommentCreateViewModel>()
             .ForMember(dest => dest.CommentText, opt => opt.MapFrom(src => src.Text)); ;
 
+        CreateMap<User, User>();
         CreateMap<User, UserCreateViewModel>()
             .ForMember(dest => dest.Roles, opt => opt.Ignore());
         CreateMap<UserCreateViewModel, User>()

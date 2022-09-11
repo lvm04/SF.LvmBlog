@@ -4,7 +4,7 @@ namespace SF.BlogData.Repository;
 
 public class Repository<T> : IRepository<T> where T : class
 {
-    protected DbContext _db;
+    public DbContext _db;
 
     public DbSet<T> Set { get; private set; }
 

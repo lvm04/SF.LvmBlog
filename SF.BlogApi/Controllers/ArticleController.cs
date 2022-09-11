@@ -2,10 +2,12 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SF.BlogApi.Contracts;
 using SF.BlogData;
 using SF.BlogData.Models;
 using SF.BlogData.Repository;
+using System.Data;
 
 namespace SF.BlogApi.Controllers
 {
@@ -126,12 +128,11 @@ namespace SF.BlogApi.Controllers
         [HttpPut]
         [Route("[action]/{id}")]
         [Authorize]
-        public async Task<IActionResult> EditTags([FromRoute] int id, [FromBody] string[] tags)
+        public async Task<IActionResult> EditTags([FromRoute] int id, [FromBody] string[] tags, [FromServices] ApplicationDbContext db)
         {
             var currentUser = await HttpContext.GetCurrentUser();
-            var articleRepo = _unitOfWork.GetRepository<Article>() as ArticleRepository;
-            var article = await articleRepo.Get(id);
 
+            var article = await db.Articles.Include(a => a.Tags).FirstOrDefaultAsync(a => a.Id == id);
             if (article == null)
                 return StatusCode(400, $"Ошибка: Статья с идентификатором {id} не существует.");
 
@@ -142,19 +143,17 @@ namespace SF.BlogApi.Controllers
                 && currentUser.Roles.FirstOrDefault(r => r.Name == "Модератор") == null)
                 return StatusCode(400, $"Ошибка: Вы не имеете право редактировать эту статью.");
 
-            var tagRepo = _unitOfWork.GetRepository<Tag>() as TagRepository;
-            var _tags = new List<Tag>();
-
+            var tagList = new List<Tag>();
             foreach (var tag in tags)
             {
-                var dbTag = await tagRepo.GetByName(tag);
+                var dbTag = await db.Tags.FirstOrDefaultAsync(t => t.Name == tag);
                 if (dbTag != null)
-                    _tags.Add(dbTag);
+                    tagList.Add(dbTag);
             }
 
-            article.Tags = _tags;
-            await articleRepo.Update(article);
-
+            article.Tags = tagList;
+            //db.Log = Console.WriteLine;
+            db.SaveChanges();
             return StatusCode(200, _mapper.Map<ArticleView>(article));
         }
 

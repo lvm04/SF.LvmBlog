@@ -4,10 +4,15 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using SF.BlogApi.Contracts;
 using SF.BlogData;
 using SF.BlogData.Models;
 using SF.BlogData.Repository;
+using System.IdentityModel.Tokens.Jwt;
+using System;
 using System.Security.Claims;
 
 namespace SF.BlogApi.Controllers
@@ -137,6 +142,36 @@ namespace SF.BlogApi.Controllers
         }
 
         /// <summary>
+        /// Редактирование ролей пользователя
+        /// </summary>
+        [HttpPut]
+        [Route("[action]/{id}")]
+        [Authorize(Roles = "Администратор")]
+        public async Task<IActionResult> EditRoles([FromRoute] int id, [FromBody] string[] roles, [FromServices] ApplicationDbContext db)
+        {
+            // Сбой при работе с двумя сущностями через репозитории
+            // https://entityframeworkcore.com/knowledge-base/52718652/ef-core-sqlite---sqlite-error-19---unique-constraint-failed
+
+            var user = await db.Users.Include(u => u.Roles).FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+                return StatusCode(400, $"Ошибка: Пользователь с идентификатором {id} не существует.");
+
+            var roleList = new List<Role>();
+            foreach (var role in roles)
+            {
+                var dbRole = await db.Roles.FirstOrDefaultAsync(r => r.Name == role);
+                if (dbRole != null)
+                    roleList.Add(dbRole);
+            }
+
+            user.Roles = roleList;
+            //db.Log = Console.WriteLine;
+            db.SaveChanges();
+
+            return StatusCode(200, _mapper.Map<UserView>(user));
+        }
+
+        /// <summary>
         /// Удаление пользователя
         /// </summary>
         [HttpDelete]
@@ -170,14 +205,44 @@ namespace SF.BlogApi.Controllers
 
             if (!String.IsNullOrEmpty(request.Password) && request.Password == user.Password)
             {
-                await CookieAuthenticate(user);
-                return StatusCode(200, $"Вы успешно вошли на сайт");
+                //await CookieAuthenticate(user);
+                //return StatusCode(200, $"Вы успешно вошли на сайт");
+                return StatusCode(200, JwtAuthenticate(user));
             }
             else
             {
                 return StatusCode(401, $"Ошибка: Неверный пароль.");
             }
+        }
 
+        private object JwtAuthenticate(User user)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimsIdentity.DefaultNameClaimType, user.Login),
+            };
+
+            foreach (var role in user.Roles)
+            {
+                claims.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, role.Name));
+            }
+
+            // создаем JWT-токен
+            var jwt = new JwtSecurityToken(
+                    issuer: AuthOptions.ISSUER,
+                    audience: AuthOptions.AUDIENCE,
+                    claims: claims,
+                    expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(20)),
+                    signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
+            var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
+
+            var response = new
+            {
+                access_token = $"Bearer {encodedJwt}",
+                login = user.Login,
+                email = user.Email
+            };
+            return response;
         }
 
         private async Task CookieAuthenticate(User user)
